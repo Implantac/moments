@@ -64,8 +64,8 @@ export function Footer() {
       {/* Columns */}
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4">
         <div>
-          <Logo light tagline />
-          <p className="mt-4 max-w-xs text-sm leading-relaxed text-ivory/55">
+          <Logo light size="signature" />
+          <p className="mt-5 max-w-xs text-sm leading-relaxed text-ivory/55">
             Perfumes importados 100% originais, lacrados e com nota. De Paris
             para o Brasil, com curadoria e carinho de {SITE.city}.
           </p>

@@ -35,7 +35,7 @@ export default async function OrderPage({
     .join(", ")}. Podemos confirmar?`;
 
   return (
-    <div className="min-h-screen bg-blush-50 pt-[101px]">
+    <div className="min-h-screen bg-blush-50 pt-[111px]">
       <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
         {/* Hero */}
         <div className="text-center">

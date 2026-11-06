@@ -46,8 +46,8 @@ export function Editorial() {
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6" ref={ref}>
-      <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
-        <div className="relative">
+      <div className="grid min-w-0 items-center gap-12 lg:grid-cols-2 lg:gap-20">
+        <div className="relative min-w-0">
           <motion.div
             style={{ y }}
             className="relative h-[520px] overflow-hidden rounded-[32px]"
@@ -113,13 +113,13 @@ export function Editorial() {
           </div>
 
           <Reveal delay={0.3}>
-            <div className="mt-10 flex gap-10 border-t border-noir-900/10 pt-8">
+            <div className="mt-10 grid grid-cols-3 gap-3 border-t border-noir-900/10 pt-8 sm:gap-6">
               {STATS.map((s) => (
-                <div key={s.label}>
-                  <p className="font-display text-4xl text-rose-600">
+                <div key={s.label} className="min-w-0">
+                  <p className="font-display text-3xl text-rose-600 sm:text-4xl">
                     {s.value}
                   </p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.18em] text-noir-900/50">
+                  <p className="mt-1 break-words text-[10px] uppercase tracking-[0.12em] text-noir-900/50 sm:text-xs sm:tracking-[0.18em]">
                     {s.label}
                   </p>
                 </div>

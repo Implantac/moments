@@ -95,7 +95,7 @@ export default async function ProductPage({ params }: Props) {
   };
 
   return (
-    <div className="pt-[101px]">
+    <div className="pt-[111px]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

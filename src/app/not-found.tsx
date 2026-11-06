@@ -1,12 +1,10 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { EiffelMark } from "@/components/logo";
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-ivory px-4 pt-[101px] text-center">
-      <EiffelMark className="h-16 w-16 text-rose-500" />
-      <p className="mt-6 text-outline-noir select-none font-display text-[8rem] leading-none sm:text-[12rem]">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-ivory px-4 pt-[111px] text-center">
+      <p className="text-outline-noir select-none font-display text-[8rem] leading-none sm:text-[12rem]">
         404
       </p>
       <h1 className="mt-2 font-display text-3xl sm:text-4xl">

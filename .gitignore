@@ -9,7 +9,7 @@ out/
 build/
 dist/
 
-# env files — NUNCA commitar segredos
+# env files — nunca commitar segredos
 .env
 .env*
 !.env.example
