@@ -198,7 +198,7 @@ export function CheckoutClient() {
 
   if (!hasHydrated) {
     return (
-      <div className="flex min-h-screen items-center justify-center pt-[101px]">
+      <div className="flex min-h-screen items-center justify-center pt-[111px]">
         <Loader2 className="animate-spin text-rose-500" size={28} />
       </div>
     );
@@ -206,7 +206,7 @@ export function CheckoutClient() {
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center px-4 pt-[101px] text-center">
+      <div className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center px-4 pt-[111px] text-center">
         <span className="inline-flex h-24 w-24 items-center justify-center rounded-full bg-blush-100 text-rose-400">
           <ShoppingBag size={38} strokeWidth={1.4} />
         </span>
@@ -225,7 +225,7 @@ export function CheckoutClient() {
   }
 
   return (
-    <div className="min-h-screen bg-blush-50 pt-[101px]">
+    <div className="min-h-screen bg-blush-50 pt-[111px]">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
         {/* Title */}
         <div className="flex flex-wrap items-center justify-between gap-4">

@@ -36,6 +36,11 @@ export function Header() {
   const openCart = useCart((s) => s.openCart);
   const pathname = usePathname();
   const router = useRouter();
+  const onDark = pathname === "/" && !scrolled && !searchOpen;
+  const solidBackground = scrolled || searchOpen;
+  const controlClass = onDark
+    ? "text-ivory hover:bg-ivory/10 hover:text-rose-300"
+    : "text-noir-900 hover:bg-blush-100 hover:text-rose-600";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -60,8 +65,8 @@ export function Header() {
     <>
       <header className="fixed inset-x-0 top-0 z-40">
         {/* Announcement bar */}
-        <div className="bg-noir-950 px-4 py-2 text-ivory">
-          <div className="mx-auto flex max-w-7xl items-center justify-center gap-8 text-[10.5px] font-medium uppercase tracking-[0.22em]">
+        <div className="bg-noir-950 px-3 py-2 text-ivory sm:px-4">
+          <div className="mx-auto flex max-w-7xl items-center justify-center gap-4 whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.14em] sm:gap-8 sm:text-[10.5px] sm:tracking-[0.22em]">
             <span className="inline-flex items-center gap-2">
               <Truck size={13} className="text-rose-300" />
               Frete grátis acima de R$ 399
@@ -86,13 +91,13 @@ export function Header() {
         <div
           className={cx(
             "border-b transition-all duration-500",
-            scrolled
-              ? "border-noir-900/8 bg-ivory/85 shadow-[0_8px_40px_-20px_rgba(23,17,20,0.25)] backdrop-blur-xl"
+            solidBackground
+              ? "border-noir-900/8 bg-ivory/95 shadow-[0_8px_40px_-20px_rgba(23,17,20,0.25)] backdrop-blur-xl"
               : "border-transparent bg-transparent",
           )}
         >
-          <div className="mx-auto flex h-17 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6" style={{ height: 68 }}>
-            <Logo />
+          <div className="mx-auto flex h-[78px] max-w-7xl items-center justify-between gap-2 px-4 min-[380px]:gap-3 sm:gap-4 sm:px-6">
+            <Logo light={onDark} />
 
             <nav className="hidden items-center gap-8 lg:flex">
               {LINKS.map((link) => {
@@ -111,23 +116,35 @@ export function Header() {
                     className={cx(
                       "group relative text-[12px] font-medium uppercase tracking-[0.24em] transition-colors",
                       active
-                        ? "text-rose-600"
-                        : "text-noir-900/70 hover:text-noir-900",
+                        ? onDark
+                          ? "text-rose-300"
+                          : "text-rose-600"
+                        : onDark
+                          ? "text-ivory/75 hover:text-ivory"
+                          : "text-noir-900/70 hover:text-noir-900",
                     )}
                   >
                     {link.label}
-                    <span className="absolute -bottom-1.5 left-0 h-px w-0 bg-rose-500 transition-all duration-300 group-hover:w-full" />
+                    <span
+                      className={cx(
+                        "absolute -bottom-1.5 left-0 h-px w-0 transition-all duration-300 group-hover:w-full",
+                        onDark ? "bg-rose-300" : "bg-rose-500",
+                      )}
+                    />
                   </Link>
                 );
               })}
             </nav>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex shrink-0 items-center gap-1.5">
               <button
                 type="button"
                 aria-label="Buscar perfumes"
                 onClick={() => setSearchOpen((v) => !v)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full text-noir-900 transition-colors hover:bg-blush-100 hover:text-rose-600"
+                className={cx(
+                  "inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors",
+                  controlClass,
+                )}
               >
                 {searchOpen ? <X size={19} /> : <Search size={19} />}
               </button>
@@ -135,7 +152,10 @@ export function Header() {
                 type="button"
                 aria-label={`Abrir sacola (${count} itens)`}
                 onClick={openCart}
-                className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-noir-900 transition-colors hover:bg-blush-100 hover:text-rose-600"
+                className={cx(
+                  "relative inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors",
+                  controlClass,
+                )}
               >
                 <ShoppingBag size={19} />
                 {hasHydrated && count > 0 && (
@@ -153,7 +173,10 @@ export function Header() {
                 type="button"
                 aria-label="Abrir menu"
                 onClick={() => setMenuOpen(true)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full text-noir-900 transition-colors hover:bg-blush-100 lg:hidden"
+                className={cx(
+                  "inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors lg:hidden",
+                  controlClass,
+                )}
               >
                 <Menu size={19} />
               </button>

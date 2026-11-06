@@ -279,7 +279,7 @@ export function ShopClient({
   );
 
   return (
-    <div className="pt-[101px]">
+    <div className="pt-[111px]">
       {/* Page header */}
       <div className="border-b border-noir-900/8 bg-blush-100">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">

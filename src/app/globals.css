@@ -48,6 +48,40 @@ body {
   color: #fff;
 }
 
+/* The brand stays crisp at every size; only its emblem responds to hover. */
+.moments-logo {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.moments-logo-tower {
+  transform-origin: 50% 40%;
+  transition: transform 550ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.moments-logo:hover .moments-logo-tower {
+  transform: translateY(-1.2px);
+}
+
+.moments-logo-details {
+  opacity: 0.92;
+  transition: opacity 400ms ease;
+}
+
+.moments-logo:hover .moments-logo-details {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .moments-logo-tower,
+  .moments-logo-details {
+    transition: none;
+  }
+
+  .moments-logo:hover .moments-logo-tower {
+    transform: none;
+  }
+}
+
 /* Subtle film grain over the whole experience */
 body::after {
   content: "";

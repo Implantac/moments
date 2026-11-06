@@ -1,114 +1,61 @@
-# Moments Paris — Perfumes Importados
+# Moments Paris
 
-Storefront e-commerce completo em **Next.js 16 (App Router) + TypeScript + Tailwind CSS v4 + PostgreSQL (Drizzle ORM)**, com sacola persistente, catálogo filtrável, páginas de produto ricas em avaliações e checkout em 3 passos com pagamento via PIX, cartão ou WhatsApp.
+Storefront de perfumes importados built with Next.js App Router, PostgreSQL and Drizzle ORM.
 
-🔗 Repositório: https://github.com/Implantac/moments
+## Stack
 
----
+- Next.js 16 + React 19 + TypeScript
+- Tailwind CSS 4
+- PostgreSQL + Drizzle ORM
+- Zustand with persisted cart
+- Framer Motion
 
-## 🚀 Hospedando na Vercel (passo a passo)
+## Features
 
-### 1. Banco de dados PostgreSQL
+- Editorial home page with featured collections
+- Product catalog with search, filters and sorting
+- Product pages with gallery, reviews and related products
+- Slide-out cart with persistent state
+- Multi-step checkout with PIX, card and WhatsApp options
+- Order confirmation and review submission APIs
+- Custom vector logo and favicon
+- All imagery served locally from `public/` (no external hotlinking)
 
-A loja precisa de um Postgres acessível pela internet. Duas opções fáceis:
-
-- **Vercel Postgres** (recomendado): no dashboard do projeto → aba **Storage** → **Create Database** → *Postgres*. Depois conecte o banco ao projeto.
-- **Neon** (gratuito): crie um projeto em [neon.tech](https://neon.tech) e copie a *connection string*.
-
-> A string precisa terminar com `?sslmode=require` (ex.: `postgres://user:pass@host/db?sslmode=require`).
-
-### 2. Variáveis de ambiente
-
-No dashboard da Vercel: **Project → Settings → Environment Variables** e adicione (marcando Production, Preview e Development):
-
-| Variável | Valor |
-|---|---|
-| `DATABASE_URL` | connection string do Postgres (passo 1) |
-
-É a **única** variável obrigatória — o app lê `process.env.DATABASE_URL` em `src/db/index.ts`. Nunca commite o `.env` (já está no `.gitignore`).
-
-Dica: com o CLI da Vercel, dá para puxar as variáveis localmente:
+## Local development
 
 ```bash
-npm i -g vercel
-vercel login
-vercel link          # vincula à pasta ao projeto
-vercel env pull .env.local
-```
-
-### 3. Importar e fazer o deploy
-
-1. Acesse [vercel.com/new](https://vercel.com/new) e importe o repositório `Implantac/moments`.
-2. Framework detectado: **Next.js** — mantenha as configurações padrão (build command `next build`, output `.next`).
-3. Com a `DATABASE_URL` já configurada, clique em **Deploy**.
-4. Todo push na branch `main` gera um novo deploy de produção automaticamente.
-
-Alternative via CLI:
-
-```bash
-vercel --prod
-```
-
-### 4. Aplicar o schema e popular o banco (uma única vez)
-
-Páginas são `force-dynamic`, então o build **não** precisa do banco. Depois do primeiro deploy, rode na sua máquina local apontando para o banco de produção:
-
-```bash
-# cria as tabelas (products, reviews, orders)
-DATABASE_URL="postgres://...?sslmode=require" npx drizzle-kit push
-
-# insere os 10 perfumes e as 34 avaliações de demonstração
-DATABASE_URL="postgres://...?sslmode=require" npx tsx src/db/seed.ts
-```
-
-Pronto — a loja já abre "pronta para vender".
-
-### 5. Extras opcionais
-
-- **Domínio próprio**: Project → Settings → Domains → adicione `lojinha.seudominio.com` (o DNS é orientado pelo assistente da Vercel).
-- **Imagens**: todas as fotos já estão em `public/` e são otimizadas automaticamente pelo `next/image`.
-- **APIs**: `/api/orders` e `/api/reviews` viram Serverless Functions automaticamente; `/api/health` serve para healthchecks.
-- **Contato comercial**: WhatsApp, Instagram e chave PIX estão centralizados em `src/lib/site.ts` — basta editar lá.
-
----
-
-## 💻 Rodando localmente
-
-```bash
-# 1. dependências
 npm install
-
-# 2. banco local (Postgres em 127.0.0.1:5432, banco app_db) + .env com DATABASE_URL
-# 3. schema + dados de demonstração
+cp .env.example .env      # set DATABASE_URL (defaults to local postgres)
 npx drizzle-kit push
 npx tsx src/db/seed.ts
-
-# 4. servidor de desenvolvimento
 npm run dev
 ```
 
-Abra http://localhost:3000
+The seed script is idempotent: it only inserts demo products/reviews when the catalog is empty.
 
-## 🗂️ Estrutura
+## 🚀 Deploying to Vercel
 
-```
-src/
-├── app/                  # rotas (home, /produtos, /produto/[slug], /checkout, /pedido/[code], /api/*)
-├── components/           # header, sacola (cart drawer), cards, home sections, checkout, produto
-├── db/                   # schema Drizzle (products, reviews, orders) + seed
-├── lib/                  # data access, formatadores (BRL, máscaras), constantes do site
-└── store/cart.ts         # sacola persistente (Zustand + localStorage)
-public/
-├── products/             # fotos dos perfumes (geradas)
-└── editorial/            # imagens de coleções, hero e lifestyle
-```
+1. **PostgreSQL database** — in your Vercel project: **Storage → Create Database → Postgres** (or use [Neon](https://neon.tech)). Grab the connection string and make sure it ends with `?sslmode=require`.
+2. **Environment variable** — **Project → Settings → Environment Variables** → add `DATABASE_URL` with that connection string (enable Production, Preview and Development). This is the only required secret; `src/db/index.ts` reads it server-side. Never commit `.env` (already gitignored).
+3. **Deploy** — at [vercel.com/new](https://vercel.com/new), import the GitHub repo `Implantac/moments`. Next.js is auto-detected; keep the default build settings and deploy. Every push to `main` triggers a new production deployment. CLI alternative: `npm i -g vercel && vercel --prod`.
+4. **Apply schema + seed (once)** — pages are `force-dynamic`, so the build does not need the database. From your machine, point at the production DB:
 
-## 🛠️ Scripts
+   ```bash
+   DATABASE_URL="postgres://...?sslmode=require" npx drizzle-kit push
+   DATABASE_URL="postgres://...?sslmode=require" npx tsx src/db/seed.ts
+   ```
 
-| Comando | Descrição |
-|---|---|
-| `npm run dev` | desenvolvimento |
-| `npm run build` | build de produção |
-| `npm run start` | servidor de produção local |
-| `npx drizzle-kit push` | aplica o schema no banco |
-| `npx tsx src/db/seed.ts` | popula produtos e avaliações |
+   `drizzle.config.ts` reads `process.env.DATABASE_URL` (falling back to the local sandbox DB), so the same commands work against production.
+5. **Optional** — add a custom domain under **Settings → Domains**. `/api/health` is available for uptime checks; `/api/orders` and `/api/reviews` deploy as serverless functions automatically.
+
+## Scripts
+
+- `npm run dev` — development server
+- `npm run build` — production build
+- `npm run start` — production server
+- `npm run lint` — ESLint
+- `npm run typecheck` — TypeScript check
+
+## Environment
+
+Server-side database access reads `DATABASE_URL`. Do not commit `.env` files or credentials.

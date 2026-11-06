@@ -24,7 +24,7 @@ export function NewsletterForm() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="Seu melhor e-mail"
-        className="w-full bg-transparent text-sm text-ivory placeholder:text-ivory/40 focus:outline-none"
+        className="min-w-0 flex-1 bg-transparent text-sm text-ivory placeholder:text-ivory/40 focus:outline-none"
       />
       <button
         type="submit"
