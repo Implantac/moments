@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: var(--font-playfair), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-jost), ui-sans-serif, system-ui, sans-serif;
+
+  --color-ivory: #faf6f2;
+  --color-cream: #f4ece6;
+  --color-blush-50: #fbf3f6;
+  --color-blush-100: #f7e9ef;
+  --color-blush-200: #f0d8e2;
+  --color-rose-300: #e3a6bf;
+  --color-rose-400: #d88bab;
+  --color-rose-500: #c96f92;
+  --color-rose-600: #b1577c;
+  --color-noir-800: #241b21;
+  --color-noir-900: #171114;
+  --color-noir-950: #100b0e;
+  --color-gold-400: #c9a25e;
+  --color-gold-500: #b98a44;
+
+  --animate-marquee: marquee 36s linear infinite;
+  --animate-marquee-slow: marquee 60s linear infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-ivory);
+  color: var(--color-noir-900);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-rose-500);
+  color: #fff;
+}
+
+/* Subtle film grain over the whole experience */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+}
+
+/* Thin elegant scrollbar for drawers */
+.nice-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-rose-300) transparent;
+}
+.nice-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.nice-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-rose-300);
+  border-radius: 999px;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@utility text-outline-noir {
+  -webkit-text-stroke: 1.5px rgb(23 17 20 / 0.22);
+  color: transparent;
+}
+
+@utility text-outline-ivory {
+  -webkit-text-stroke: 1.5px rgb(250 246 242 / 0.28);
+  color: transparent;
+}
+
+/* Hide native number input arrows for qty fields */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
