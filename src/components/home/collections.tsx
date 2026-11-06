@@ -10,7 +10,7 @@ const COLLECTIONS = [
     title: "Para Ela",
     description: "Florais, orientais e gourmands que viram assinatura.",
     image:
-      "https://images.pexels.com/photos/28606748/pexels-photo-28606748.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=800",
+      "/editorial/28606748.jpg",
   },
   {
     href: "/produtos?categoria=masculino",
@@ -18,7 +18,7 @@ const COLLECTIONS = [
     title: "Para Ele",
     description: "Amadeirados, especiados e frescos de presença marcante.",
     image:
-      "https://images.pexels.com/photos/28557815/pexels-photo-28557815.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=800",
+      "/editorial/28557815.jpg",
   },
   {
     href: "/produtos?promo=1",
@@ -26,7 +26,7 @@ const COLLECTIONS = [
     title: "Em Oferta",
     description: "Importados originais com descontos especiais por tempo limitado.",
     image:
-      "https://images.pexels.com/photos/11678207/pexels-photo-11678207.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=800",
+      "/editorial/11678207.jpg",
     gold: true,
   },
 ];

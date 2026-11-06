@@ -53,7 +53,7 @@ export function Editorial() {
             className="relative h-[520px] overflow-hidden rounded-[32px]"
           >
             <Image
-              src="https://images.pexels.com/photos/8797910/pexels-photo-8797910.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=900"
+              src="/editorial/8797910.jpg"
               alt="Rua de Paris ao entardecer com a Torre Eiffel ao fundo"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"

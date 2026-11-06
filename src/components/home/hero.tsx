@@ -38,7 +38,7 @@ export function Hero({ highlight }: { highlight: ProductListItem | null }) {
       {/* Background */}
       <motion.div style={{ y: bgY }} className="absolute inset-0 scale-110">
         <Image
-          src="https://images.pexels.com/photos/30618765/pexels-photo-30618765.jpeg?auto=compress&cs=tinysrgb&w=1920"
+          src="/editorial/30618765.jpg"
           alt="Perfume importado sobre pétalas de rosas"
           fill
           priority

@@ -1,11 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "images.pexels.com" },
-    ],
-  },
+  // Todas as imagens agora são servidas de /public — sem remotePatterns.
   async headers() {
     return [
       {

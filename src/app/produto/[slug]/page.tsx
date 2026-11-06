@@ -22,21 +22,21 @@ export const dynamic = "force-dynamic";
 const LIFESTYLE: Record<string, { src: string; alt: string }[]> = {
   feminino: [
     {
-      src: "https://images.pexels.com/photos/8450339/pexels-photo-8450339.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960",
+      src: "/editorial/8450339.jpg",
       alt: "Mulher elegante escolhendo perfume entre flores",
     },
     {
-      src: "https://images.pexels.com/photos/9790391/pexels-photo-9790391.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960",
+      src: "/editorial/9790391.jpg",
       alt: "Aplicação de perfume em frasco clássico",
     },
   ],
   masculino: [
     {
-      src: "https://images.pexels.com/photos/29133442/pexels-photo-29133442.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960",
+      src: "/editorial/29133442.jpg",
       alt: "Homem elegante de terno ajustando o laço",
     },
     {
-      src: "https://images.pexels.com/photos/40521620/pexels-photo-40521620.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=960",
+      src: "/editorial/40521620.jpg",
       alt: "Homem aplicando perfume ao ar livre",
     },
   ],
