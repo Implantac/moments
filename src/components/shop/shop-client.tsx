@@ -5,7 +5,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown, SearchX, SlidersHorizontal, X } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { cx } from "@/lib/format";
-import { PIX_DISCOUNT_RATE } from "@/lib/site";
+import { matchesSearch, searchHaystack } from "@/lib/search";
+import { PIX_DISCOUNT_RATE, whatsappLink } from "@/lib/site";
 import type { ProductListItem, SortKey } from "@/lib/types";
 
 const PRICE_BUCKETS = [
@@ -141,10 +142,15 @@ export function ShopClient({
       if (p.priceCents < bucketData.min || p.priceCents > bucketData.max)
         return false;
       if (q) {
-        const haystack =
-          `${p.name} ${p.brand} ${p.family} ${CATEGORY_LABELS[p.category] ?? p.category}`.toLowerCase();
-        if (!q.split(/\s+/).every((token) => haystack.includes(token)))
-          return false;
+        // Normaliza acento, números por extenso e tolera erro de digitação
+        // (ver src/lib/search.ts): "si" acha "Sì", "savage" acha "Sauvage".
+        const haystack = searchHaystack([
+          p.name,
+          p.brand,
+          p.family,
+          CATEGORY_LABELS[p.category] ?? p.category,
+        ]);
+        if (!matchesSearch(q, haystack)) return false;
       }
       return true;
     });
@@ -435,16 +441,29 @@ export function ShopClient({
                   Nenhum perfume encontrado
                 </h3>
                 <p className="mt-2 max-w-sm text-sm text-noir-900/55">
-                  Tente ajustar os filtros ou buscar por outro termo — ou fale
-                  com a gente que encomendamos pra você.
+                  {query.trim()
+                    ? `Não temos nada com “${query.trim()}”. Veja os destaques da loja ou fale com a Neusa — ela encomenda pra você.`
+                    : "Tente ajustar os filtros ou buscar por outro termo — ou fale com a gente que encomendamos pra você."}
                 </p>
                 <button
                   type="button"
                   onClick={clearAll}
                   className="mt-6 rounded-full bg-noir-900 px-7 py-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-ivory transition-colors hover:bg-rose-600"
                 >
-                  Limpar filtros
+                  {query.trim() ? "Ver todos os perfumes" : "Limpar filtros"}
                 </button>
+                {query.trim() && (
+                  <a
+                    href={whatsappLink(
+                      `Olá, Neusa! Procurei "${query.trim()}" no site e não encontrei. Você consegue pra mim?`,
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-rose-600 underline-offset-4 hover:underline"
+                  >
+                    Perguntar se ela tem
+                  </a>
+                )}
               </div>
             )}
           </div>
