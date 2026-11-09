@@ -8,7 +8,8 @@ import {
   SHIPPING_FLAT_CENTS,
 } from "@/lib/site";
 import { notifyNewOrder } from "@/lib/notify";
-import { signOrderCode } from "@/lib/order-token";
+import { orderPath, signOrderCode } from "@/lib/order-token";
+import { siteUrl } from "@/lib/site-url";
 import { buildPixPayload } from "@/lib/pix";
 
 export const dynamic = "force-dynamic";
@@ -256,7 +257,9 @@ export async function POST(req: Request) {
         : null;
 
     // Notificação é best-effort: nunca derruba o checkout.
+    // O link leva ao pedido já com o token — a loja abre direto do celular.
     void notifyNewOrder({
+      orderUrl: `${siteUrl()}${orderPath(inserted.code)}`,
       code: inserted.code,
       totalCents: total,
       subtotalCents: subtotal,

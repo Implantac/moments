@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import type { ReactNode } from "react";
 import { Jost, Playfair_Display } from "next/font/google";
 import { CartDrawer } from "@/components/cart-drawer";
@@ -59,6 +60,12 @@ export const metadata: Metadata = {
     follow: true,
   },
   formatDetection: { telephone: false },
+  // Atalho na tela de início do celular: ícone + nome curto (manifest.ts).
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -70,6 +77,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <main>{children}</main>
         <Footer />
         <WhatsAppFloat />
+        {/* Analytics sem cookie: conta visitas e conversão sem banner de LGPD. */}
+        <Analytics />
       </body>
     </html>
   );

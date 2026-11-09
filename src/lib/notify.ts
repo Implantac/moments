@@ -1,10 +1,15 @@
 /**
- * Notificações de pedido. Duas saídas independentes e opcionais:
+ * Notificações de pedido novo.
  *
- *  1. TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID  → alerta instantâneo no celular
- *  2. RESEND_API_KEY                          → e-mail para a loja e/ou cliente
+ * O painel /admin só avisa quem já está olhando a tela. Este módulo leva o
+ * pedido até o celular da loja — três saídas independentes e opcionais:
  *
- * Sem essas variáveis o sistema funciona normalmente: apenas não notifica.
+ *  1. TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID → alerta instantâneo no celular
+ *  2. WHATSAPP_TOKEN + WHATSAPP_PHONE_ID + WHATSAPP_TO → mensagem via API
+ *     oficial do WhatsApp (Meta), se a loja tiver conta no WhatsApp Business
+ *  3. RESEND_API_KEY (+ STORE_EMAIL) → e-mail
+ *
+ * Sem nenhuma delas o sistema funciona normalmente: apenas não notifica.
  * Todas as chamadas são "best effort" — nunca derrubam o checkout.
  */
 
@@ -23,6 +28,8 @@ export type OrderNotification = {
   state: string;
   items: { name: string; qty: number; priceCents: number }[];
   pixPayload?: string | null;
+  /** Link assinado da página do pedido, para abrir direto do aviso. */
+  orderUrl?: string;
 };
 
 function formatBRL(cents: number): string {
@@ -54,6 +61,7 @@ function orderSummary(o: OrderNotification): string {
     `*${o.customerName}*`,
     `${o.phone} · ${o.email}`,
     `${o.city}/${o.state}`,
+    o.orderUrl ? `\nAbrir no painel: ${o.orderUrl}` : null,
   ]
     .filter(Boolean)
     .join("\n");
@@ -76,6 +84,39 @@ async function notifyTelegram(o: OrderNotification): Promise<void> {
   });
   if (!res.ok) {
     throw new Error(`Telegram respondeu ${res.status}: ${await res.text()}`);
+  }
+}
+
+/**
+ * WhatsApp Cloud API (Meta). Exige conta no WhatsApp Business:
+ *   WHATSAPP_TOKEN     token permanente do app
+ *   WHATSAPP_PHONE_ID  id do número que envia
+ *   WHATSAPP_TO        número que recebe o aviso (ex.: 5543999542246)
+ */
+async function notifyWhatsApp(o: OrderNotification): Promise<void> {
+  const token = process.env.WHATSAPP_TOKEN;
+  const phoneId = process.env.WHATSAPP_PHONE_ID;
+  const to = process.env.WHATSAPP_TO;
+  if (!token || !phoneId || !to) return;
+
+  const res = await fetch(
+    `https://graph.facebook.com/v21.0/${phoneId}/messages`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        to,
+        type: "text",
+        text: { body: orderSummary(o).replace(/\*/g, "") },
+      }),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`WhatsApp respondeu ${res.status}: ${await res.text()}`);
   }
 }
 
@@ -108,6 +149,11 @@ function orderEmailHtml(o: OrderNotification): string {
       o.pixPayload
         ? `<h2 style="font-size:14px;margin:28px 0 6px;text-transform:uppercase;letter-spacing:.1em;color:#999">PIX copia e cola</h2>
            <p style="font-family:ui-monospace,monospace;font-size:11px;word-break:break-all;background:#f6f6f6;padding:12px;border-radius:8px">${o.pixPayload}</p>`
+        : ""
+    }
+    ${
+      o.orderUrl
+        ? `<p style="margin:24px 0 0"><a href="${o.orderUrl}" style="display:inline-block;background:#1a1a1a;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-size:13px">Ver pedido</a></p>`
         : ""
     }
   </div>`;
@@ -147,7 +193,11 @@ async function notifyEmail(o: OrderNotification): Promise<void> {
  * Erros são apenas logados — o pedido já está gravado no banco.
  */
 export async function notifyNewOrder(o: OrderNotification): Promise<void> {
-  const results = await Promise.allSettled([notifyTelegram(o), notifyEmail(o)]);
+  const results = await Promise.allSettled([
+    notifyTelegram(o),
+    notifyWhatsApp(o),
+    notifyEmail(o),
+  ]);
   for (const r of results) {
     if (r.status === "rejected") {
       console.error("[notify] falha ao notificar pedido:", r.reason);
