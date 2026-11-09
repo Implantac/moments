@@ -21,8 +21,8 @@ import { buildPixPayload } from "@/lib/pix";
 import { verifyOrderToken } from "@/lib/order-token";
 import {
   STATUS_CUSTOMER_HINT,
-  TIMELINE,
   statusLabel,
+  timelineFor,
 } from "@/lib/order-status";
 import { SITE, whatsappLink } from "@/lib/site";
 
@@ -105,7 +105,7 @@ export default async function OrderPage({
           </p>
 
           {/* Status atual: é o que o painel da loja promete ao cliente. */}
-          <OrderProgress status={status} />
+          <OrderProgress status={status} paymentMethod={order.paymentMethod} />
         </div>
 
         {/* Payment */}
@@ -309,15 +309,22 @@ function AccessDenied({ code }: { code: string }) {
 }
 
 /** Linha do tempo do pedido: aguardando → pago → enviado → entregue. */
-function OrderProgress({ status }: { status: string }) {
+function OrderProgress({
+  status,
+  paymentMethod,
+}: {
+  status: string;
+  paymentMethod: string;
+}) {
   if (status === "cancelado") return null;
 
-  const currentIndex = TIMELINE.indexOf(status as (typeof TIMELINE)[number]);
+  const timeline = timelineFor(paymentMethod);
+  const currentIndex = timeline.indexOf(status);
 
   return (
     <div className="mx-auto mt-7 max-w-2xl">
       <div className="flex items-start">
-        {TIMELINE.map((step, i) => {
+        {timeline.map((step, i) => {
           const done = currentIndex >= 0 && i <= currentIndex;
           const isCurrent = i === currentIndex;
           return (
@@ -348,7 +355,7 @@ function OrderProgress({ status }: { status: string }) {
                 <span
                   className={
                     "h-px flex-1 " +
-                    (i === TIMELINE.length - 1
+                    (i === timeline.length - 1
                       ? "bg-transparent"
                       : i < currentIndex
                         ? "bg-rose-300"

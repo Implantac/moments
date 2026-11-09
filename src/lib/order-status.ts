@@ -38,8 +38,16 @@ export const STATUS_CUSTOMER_HINT: Record<string, string> = {
     "Este pedido foi cancelado. Se tiver dúvidas, fale com a loja no WhatsApp.",
 };
 
-/** Etapas visíveis na linha do tempo do cliente (cancelado fica fora). */
-export const TIMELINE = ["aguardando_pagamento", "pago", "enviado", "entregue"] as const;
+/**
+ * Etapas da linha do tempo do cliente (cancelado fica fora).
+ * Pedido por PIX começa em "Aguardando PIX"; pedido combinado no WhatsApp
+ * começa em "Aguardando contato" — antes a página mostrava "Aguardando PIX"
+ * também para quem tinha escolhido WhatsApp.
+ */
+export function timelineFor(paymentMethod: string): readonly string[] {
+  const first = paymentMethod === "whatsapp" ? "aguardando_contato" : "aguardando_pagamento";
+  return [first, "pago", "enviado", "entregue"];
+}
 
 export function statusLabel(status: string): string {
   return STATUS_LABEL[status] ?? status;
