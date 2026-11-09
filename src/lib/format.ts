@@ -13,9 +13,26 @@ export function formatBRL(cents: number) {
   return brl.format(cents / 100);
 }
 
-export function installmentsLabel(cents: number, times = 10) {
-  const each = Math.round(cents / times);
-  return `em até ${times}x de ${formatBRL(each)} sem juros`;
+/**
+ * Parcelamento no cartão.
+ * `interestFree` é a quantidade de parcelas sem juros; acima disso há juros
+ * simples embutidos. Nunca anunciar "sem juros" além do que é praticado —
+ * oferta vaga vincula o lojista (CDC, art. 30).
+ */
+export function installmentsLabel(
+  cents: number,
+  interestFree = 6,
+  max = 12,
+) {
+  const each = Math.round(cents / interestFree);
+  return `até ${interestFree}x de ${formatBRL(each)} sem juros · ${max}x com juros`;
+}
+
+/** Valor de cada parcela com juros simples compostos sobre o total. */
+export function installmentValue(cents: number, times: number, monthlyRate = 0.0299) {
+  if (times <= 1) return cents;
+  const total = cents * (1 + monthlyRate * (times - 1));
+  return Math.round(total / times);
 }
 
 export function formatDatePtBr(date: Date | string) {

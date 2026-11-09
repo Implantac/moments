@@ -16,7 +16,7 @@ const GUARANTEES = [
   {
     icon: Truck,
     title: "Envio para todo o Brasil",
-    text: "Postagem em até 24h úteis e frete grátis acima de R$ 399.",
+    text: "Postagem em até 24h úteis e frete grátis acima de R$ 599.",
   },
   {
     icon: BadgeCheck,
@@ -25,14 +25,19 @@ const GUARANTEES = [
   },
   {
     icon: QrCode,
-    title: "5% OFF no PIX",
+    title: "3% OFF no PIX",
     text: "Pagamento instantâneo com desconto aplicado no checkout.",
   },
 ];
 
+/**
+ * Só entra aqui número que a loja consegue provar.
+ * As métricas antigas ("2.5k+ clientes", "4.9 de avaliação") eram
+ * afirmações sem lastro — em loja real isso é publicidade enganosa.
+ */
 const STATS = [
-  { value: "2.5k+", label: "clientes atendidos" },
-  { value: "4.9", label: "avaliação média" },
+  { value: "24h", label: "prazo de postagem" },
+  { value: "7 dias", label: "direito de devolução" },
   { value: "100%", label: "produtos originais" },
 ];
 

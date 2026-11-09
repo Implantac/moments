@@ -9,6 +9,8 @@ import { ReviewsSection } from "@/components/product/reviews-section";
 import { ProductCard } from "@/components/product-card";
 import { RatingStars } from "@/components/rating-stars";
 import { Reveal, SectionHeading } from "@/components/motion";
+import { SITE } from "@/lib/site";
+import { siteUrl } from "@/lib/site-url";
 import {
   getProductBySlug,
   getProductReviews,
@@ -69,20 +71,45 @@ export default async function ProductPage({ params }: Props) {
     ...lifestyle,
   ];
 
+  // Dados estruturados para Google Shopping / Merchant Center e rich results.
+  const url = `${siteUrl()}/produto/${product.slug}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: `${product.name} — ${product.brand}`,
-    image: product.image,
+    image: [`${siteUrl()}${product.image}`],
     description: product.description,
+    sku: product.slug,
     brand: { "@type": "Brand", name: product.brand },
+    category: product.category === "feminino" ? "Perfume Feminino" : "Perfume Masculino",
     offers: {
       "@type": "Offer",
+      url,
       priceCurrency: "BRL",
       price: (product.priceCents / 100).toFixed(2),
-      availability: product.stock > 0
-        ? "https://schema.org/InStock"
-        : "https://schema.org/OutOfStock",
+      itemCondition: "https://schema.org/NewCondition",
+      availability:
+        product.stock > 0
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
+      seller: { "@type": "Organization", name: SITE.name },
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        shippingRate: {
+          "@type": "MonetaryAmount",
+          value: "0",
+          currency: "BRL",
+        },
+      },
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        applicableCountry: "BR",
+        returnPolicyCategory:
+          "https://schema.org/MerchantReturnFiniteReturnWindow",
+        merchantReturnDays: 7,
+        returnMethod: "https://schema.org/ReturnByMail",
+        returnFees: "https://schema.org/FreeReturn",
+      },
     },
     aggregateRating:
       product.ratingCount > 0

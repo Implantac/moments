@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, Flower2, Gem, Leaf, Sparkles, Truck } from "lucide-react";
-import { cx } from "@/lib/format";
+import { cx, formatBRL } from "@/lib/format";
+import { FREE_SHIPPING_THRESHOLD_CENTS, SHIPPING_FLAT_CENTS } from "@/lib/site";
 
 export function ProductAccordions({
   description,
@@ -71,7 +72,7 @@ export function ProductAccordions({
       content: (
         <ul className="list-inside space-y-2 text-sm leading-relaxed">
           <li>· Postagem em até 24h úteis após a confirmação do pagamento.</li>
-          <li>· Frete grátis em pedidos acima de R$ 399 (abaixo disso, R$ 29,90).</li>
+          <li>· Frete grátis em pedidos acima de {formatBRL(FREE_SHIPPING_THRESHOLD_CENTS)} (abaixo disso, {formatBRL(SHIPPING_FLAT_CENTS)}).</li>
           <li>· Prazo estimado de 3 a 10 dias úteis conforme a região.</li>
           <li>· Troca facilitada em até 7 dias para produtos lacrados.</li>
           <li>· Acompanhe seu pedido pelo WhatsApp com código de rastreio.</li>

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { MapPin, MessageCircle, QrCode } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { NewsletterForm } from "@/components/newsletter";
-import { SITE, whatsappLink } from "@/lib/site";
+import { CARD_INSTALLMENTS, PIX_DISCOUNT_RATE, SITE, whatsappLink } from "@/lib/site";
 
 function InstagramIcon({
   size = 17,
@@ -38,6 +38,14 @@ const shopLinks = [
   { href: "/produtos?promo=1", label: "Promoções" },
 ];
 
+const institutionalLinks = [
+  { href: "/sobre", label: "Quem somos" },
+  { href: "/contato", label: "Contato" },
+  { href: "/trocas", label: "Trocas e devoluções" },
+  { href: "/termos", label: "Termos de uso" },
+  { href: "/politica-de-privacidade", label: "Privacidade (LGPD)" },
+];
+
 export function Footer() {
   return (
     <footer className="relative overflow-hidden bg-noir-950 text-ivory">
@@ -62,7 +70,7 @@ export function Footer() {
       </div>
 
       {/* Columns */}
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-5">
         <div>
           <Logo light size="signature" />
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-ivory/55">
@@ -146,6 +154,24 @@ export function Footer() {
           </ul>
         </div>
 
+        <div id="institucional">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.3em] text-rose-300">
+            A loja
+          </h3>
+          <ul className="mt-4 space-y-2.5 text-sm text-ivory/60">
+            {institutionalLinks.map((l) => (
+              <li key={l.href}>
+                <Link
+                  href={l.href}
+                  className="transition-colors hover:text-ivory"
+                >
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
         <div>
           <h3 className="text-[11px] font-semibold uppercase tracking-[0.3em] text-rose-300">
             Pagamento
@@ -156,14 +182,18 @@ export function Footer() {
               <span>
                 PIX: {SITE.pixKey}
                 <span className="block text-xs text-ivory/40">
-                  {SITE.pixHolder} · 5% de desconto
+                  {SITE.pixHolder} · {Math.round(PIX_DISCOUNT_RATE * 100)}% de
+                  desconto
                 </span>
               </span>
             </li>
             <li className="text-sm text-ivory/60">
-              Cartão de crédito em até 10x sem juros
+              Cartão em até {CARD_INSTALLMENTS.interestFree}x sem juros —
+              combinado no WhatsApp
             </li>
-            <li className="text-sm text-ivory/60">Pedidos também pelo WhatsApp</li>
+            <li className="text-sm text-ivory/60">
+              Pagamento pelo WhatsApp com a {SITE.representative.split(" ")[0]}
+            </li>
           </ul>
         </div>
       </div>
@@ -171,7 +201,9 @@ export function Footer() {
       <div className="border-t border-ivory/10">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-center text-xs text-ivory/40 sm:flex-row sm:px-6 sm:text-left">
           <p>
-            © 2026 {SITE.name} — {SITE.tagline}. Todos os direitos reservados.
+            © {new Date().getFullYear()} {SITE.name} — {SITE.tagline}.
+            {SITE.cnpj ? ` CNPJ ${SITE.cnpj}.` : ""} Todos os direitos
+            reservados.
           </p>
           <p>Fotos meramente ilustrativas · Preços sujeitos a alteração</p>
         </div>

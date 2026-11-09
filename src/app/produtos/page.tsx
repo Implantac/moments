@@ -5,7 +5,7 @@ import { ShopClient } from "@/components/shop/shop-client";
 export const metadata: Metadata = {
   title: "Perfumes",
   description:
-    "Todos os perfumes importados da Moments Paris: femininos, masculinos, promoções e lançamentos. Originais, lacrados e com frete grátis acima de R$ 399.",
+    "Todos os perfumes importados da Moments Paris: femininos, masculinos, promoções e lançamentos. Originais, lacrados e com frete grátis acima de R$ 599.",
 };
 
 export const dynamic = "force-dynamic";

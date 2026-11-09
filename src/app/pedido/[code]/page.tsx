@@ -4,35 +4,61 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   CheckCircle2,
-  CreditCard,
+  Copy,
   MapPin,
   MessageCircle,
-  QrCode,
+  ShieldAlert,
+  Truck,
 } from "lucide-react";
-import { CopyPixKey } from "@/components/order/copy-pix";
+import { CopyButton } from "@/components/order/copy-pix";
+import { PixPayment } from "@/components/order/pix-payment";
 import { formatBRL, formatDatePtBr } from "@/lib/format";
 import { getOrderByCode } from "@/lib/data";
+import { buildPixPayload } from "@/lib/pix";
+import { verifyOrderToken } from "@/lib/order-token";
 import { SITE, whatsappLink } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Pedido confirmado",
+  robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";
 
 export default async function OrderPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ code: string }>;
+  searchParams: Promise<{ t?: string }>;
 }) {
   const { code } = await params;
+  const { t } = await searchParams;
+
   const order = await getOrderByCode(code);
-  if (!order) notFound();
+
+  // O link carrega dados pessoais (nome, e-mail, endereço). Sem o token
+  // assinado, o pedido não é exibido — nem se o código for adivinhado.
+  if (!order || !verifyOrderToken(code, t)) {
+    if (!order) notFound();
+    return <AccessDenied code={code} />;
+  }
 
   const firstName = order.customerName.split(" ")[0];
   const waMessage = `Olá! Acabei de fazer o pedido ${order.code} no site da Moments Paris (${formatBRL(order.totalCents)}). Itens: ${order.items
     .map((i) => `${i.qty}x ${i.name}`)
     .join(", ")}. Podemos confirmar?`;
+
+  const pixPayload =
+    order.paymentMethod === "pix"
+      ? buildPixPayload({
+          key: SITE.pixKey,
+          merchantName: SITE.pixHolder,
+          merchantCity: SITE.pixCity,
+          amount: order.totalCents / 100,
+          txid: order.code.replace("-", ""),
+        })
+      : null;
 
   return (
     <div className="min-h-screen bg-blush-50 pt-[111px]">
@@ -49,54 +75,19 @@ export default async function OrderPage({
             Obrigada, <em className="text-rose-500">{firstName}</em>!
           </h1>
           <p className="mx-auto mt-3 max-w-md text-sm text-noir-900/60">
-            Seu pedido foi recebido em {formatDatePtBr(order.createdAt)} e uma
-            cópia foi enviada para <strong>{order.email}</strong>.
+            Seu pedido foi registrado em {formatDatePtBr(order.createdAt)}.
+            Guarde este link — ele é a sua via de acompanhamento.
           </p>
         </div>
 
-        {/* Payment instructions */}
+        {/* Payment */}
         <div className="mt-10 rounded-[28px] border border-noir-900/8 bg-white p-7 sm:p-9">
-          {order.paymentMethod === "pix" && (
-            <div className="text-center">
-              <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
-                <QrCode size={22} />
-              </span>
-              <h2 className="mt-4 font-display text-2xl">
-                Pague com PIX para confirmar
-              </h2>
-              <p className="mt-2 text-sm text-noir-900/55">
-                Chave PIX (CPF):
-              </p>
-              <p className="mt-1 font-display text-3xl tracking-wide text-noir-900">
-                {SITE.pixKey}
-              </p>
-              <p className="mt-1 text-xs text-noir-900/50">
-                {SITE.pixHolder} · Moments Paris
-              </p>
-              <div className="mt-4 inline-flex items-baseline gap-2 rounded-2xl bg-blush-50 px-6 py-3">
-                <span className="text-xs uppercase tracking-[0.2em] text-noir-900/50">
-                  Valor com 5% OFF
-                </span>
-                <span className="font-display text-2xl font-semibold text-rose-600">
-                  {formatBRL(order.totalCents)}
-                </span>
-              </div>
-              <div className="mt-6 flex flex-wrap justify-center gap-3">
-                <CopyPixKey />
-                <a
-                  href={whatsappLink(waMessage)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-noir-900/12 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-noir-900 transition-colors hover:border-emerald-500 hover:text-emerald-700"
-                >
-                  <MessageCircle size={14} /> Enviar comprovante
-                </a>
-              </div>
-              <p className="mt-5 text-xs text-noir-900/45">
-                Assim que identificarmos o pagamento, seu pedido é separado e
-                postado em até 24h úteis.
-              </p>
-            </div>
+          {pixPayload && (
+            <PixPayment
+              payload={pixPayload}
+              amountCents={order.totalCents}
+              code={order.code}
+            />
           )}
 
           {order.paymentMethod === "whatsapp" && (
@@ -121,26 +112,19 @@ export default async function OrderPage({
               </a>
             </div>
           )}
-
-          {order.paymentMethod === "card" && (
-            <div className="text-center">
-              <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blush-100 text-rose-500">
-                <CreditCard size={22} />
-              </span>
-              <h2 className="mt-4 font-display text-2xl">
-                Estamos processando seu pagamento
-              </h2>
-              <p className="mx-auto mt-2 max-w-md text-sm text-noir-900/55">
-                Você receberá a confirmação por e-mail e pelo WhatsApp em
-                instantes. Qualquer dúvida, fale com a gente.
-              </p>
-            </div>
-          )}
         </div>
 
         {/* Order summary */}
         <div className="mt-8 rounded-[28px] border border-noir-900/8 bg-white p-7 sm:p-9">
-          <h2 className="font-display text-2xl">Resumo do pedido</h2>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-2xl">Resumo do pedido</h2>
+            <CopyButton
+              value={order.code}
+              label="Copiar nº"
+              copiedLabel="Copiado!"
+              variant="outline"
+            />
+          </div>
           <ul className="mt-5 space-y-4">
             {order.items.map((item) => (
               <li key={item.slug} className="flex items-center gap-4">
@@ -200,6 +184,11 @@ export default async function OrderPage({
             {order.complement ? ` — ${order.complement}` : ""}, {order.city}/
             {order.state} · CEP {order.cep}
           </p>
+          <p className="mt-3 flex items-start gap-2.5 rounded-2xl bg-blush-50 p-4 text-xs text-noir-900/60">
+            <Truck size={15} className="mt-0.5 shrink-0 text-rose-500" />
+            Prazo: postagem em até 24h úteis após a confirmação do pagamento.
+            Você recebe o código de rastreio no WhatsApp.
+          </p>
         </div>
 
         <div className="mt-8 flex flex-wrap justify-center gap-4">
@@ -218,7 +207,37 @@ export default async function OrderPage({
             <MessageCircle size={15} /> Falar no WhatsApp
           </a>
         </div>
+
+        <p className="mt-8 flex items-center justify-center gap-2 text-center text-[11px] text-noir-900/35">
+          <Copy size={11} /> Este link é pessoal e intransferível — não
+          compartilhe para proteger seus dados.
+        </p>
       </div>
+    </div>
+  );
+}
+
+function AccessDenied({ code }: { code: string }) {
+  return (
+    <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center px-4 pt-[111px] text-center">
+      <span className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+        <ShieldAlert size={38} strokeWidth={1.6} />
+      </span>
+      <h1 className="mt-6 font-display text-3xl">Link incompleto</h1>
+      <p className="mt-3 text-sm text-noir-900/55">
+        O pedido <strong>{code}</strong> existe, mas o link que você usou não
+        contém o código de acesso. Por segurança, não mostramos nome, endereço e
+        e-mail sem essa confirmação. Use o link completo que você recebeu ao
+        finalizar a compra, ou fale com a loja no WhatsApp.
+      </p>
+      <a
+        href={whatsappLink(`Olá! Preciso de ajuda com o pedido ${code}.`)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-8 inline-flex items-center gap-2 rounded-full bg-noir-900 px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-ivory transition-colors hover:bg-rose-600"
+      >
+        <MessageCircle size={15} /> Falar com a loja
+      </a>
     </div>
   );
 }

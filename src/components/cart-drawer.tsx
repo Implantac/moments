@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { formatBRL } from "@/lib/format";
-import { FREE_SHIPPING_THRESHOLD_CENTS } from "@/lib/site";
+import { FREE_SHIPPING_THRESHOLD_CENTS, PIX_DISCOUNT_RATE } from "@/lib/site";
 import { useCart, useCartTotals } from "@/store/cart";
 
 export function CartDrawer() {
@@ -204,7 +204,7 @@ export function CartDrawer() {
                   </span>
                 </div>
                 <p className="mt-1 text-[11px] text-noir-900/50">
-                  5% OFF no PIX aplicado no checkout · até 10x sem juros
+                  {Math.round(PIX_DISCOUNT_RATE * 100)}% OFF no PIX aplicado no checkout
                 </p>
                 <Link
                   href="/checkout"

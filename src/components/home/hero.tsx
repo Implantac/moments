@@ -141,8 +141,8 @@ export function Hero({ highlight }: { highlight: ProductListItem | null }) {
               Brasil
             </li>
             <li className="inline-flex items-center gap-2">
-              <Star size={15} className="fill-current text-gold-400" /> 4.9 de
-              avaliação média
+              <Star size={15} className="fill-current text-gold-400" /> Atendimento
+              direto com a loja
             </li>
           </motion.ul>
         </div>

@@ -1,37 +1,32 @@
-import { BadgeCheck, Quote } from "lucide-react";
+import { BadgeCheck, MessageCircle, ShieldCheck, Truck } from "lucide-react";
 import { Reveal, SectionHeading } from "@/components/motion";
-import { RatingStars } from "@/components/rating-stars";
+import { SITE, whatsappLink } from "@/lib/site";
 
-const TESTIMONIALS = [
+/**
+ * Substitui a seção de depoimentos fictícios.
+ *
+ * Publicar depoimentos inventados em uma loja real é publicidade enganosa
+ * (CDC, art. 37) — e num mercado onde o cliente teme falsificação, é a
+ * reivindicação que mais destrói confiança quando descoberta.
+ *
+ * Enquanto não houver depoimentos reais com autorização, mostramos o que
+ * podemos provar: quem atende, como embala e o que garante a compra.
+ */
+const PROMISES = [
   {
-    name: "Natália V.",
-    city: "Londrina, PR",
-    rating: 5,
-    text: "Comprei o La Vie Est Belle e chegou em 2 dias, lacrado e cheirando maravilha. O atendimento da Neusa é impecável — ela me mandou até vídeo do produto antes de enviar.",
+    icon: BadgeCheck,
+    title: "Original e lacrado",
+    text: "Todo perfume é importado, com nota fiscal e conferência de lote antes de sair.",
   },
   {
-    name: "João Pedro H.",
-    city: "Curitiba, PR",
-    rating: 5,
-    text: "Sauvage original pelo melhor preço que achei no Brasil. Pedi pelo WhatsApp, paguei no PIX e recebi com nota e código de rastreio. Confiança total.",
+    icon: Truck,
+    title: "Postagem em 24h úteis",
+    text: "Código de rastreio enviado no WhatsApp assim que o pacote é postado.",
   },
   {
-    name: "Adriana S.",
-    city: "Maringá, PR",
-    rating: 5,
-    text: "Já é a quarta compra na Moments Paris. Sempre um brinde fofo na embalagem e os perfumes são sempre originais. Recomendo pra todo mundo da família.",
-  },
-  {
-    name: "Fernando C.",
-    city: "São Paulo, SP",
-    rating: 5,
-    text: "Presenteei minha mãe com o Coco Mademoiselle. A embalagem para presente é tão bonita que ela quase não quis abrir. Virei cliente.",
-  },
-  {
-    name: "Beatriz M.",
-    city: "Cambé, PR",
-    rating: 4.9,
-    text: "O Libre era meu sonho de consumo e aqui estava bem mais em conta. Entrega rápida e perfume com fixação absurda. Só elogios onde eu passo.",
+    icon: ShieldCheck,
+    title: "7 dias para desistir",
+    text: "Direito de arrependimento do CDC: recebeu e não era o que esperava, devolvemos.",
   },
 ];
 
@@ -42,45 +37,58 @@ export function Testimonials() {
         <SectionHeading
           light
           center
-          overline="Depoimentos"
+          overline="Por que comprar aqui"
           title={
             <>
-              Quem comprou, <em className="text-rose-300">amou</em>
+              Quem atende, <em className="text-rose-300">se responsabiliza</em>
             </>
           }
         />
 
-        <div className="no-scrollbar mt-14 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4">
-          {TESTIMONIALS.map((t, i) => (
-            <Reveal
-              key={t.name}
-              delay={i * 0.07}
-              className="w-[320px] shrink-0 snap-start sm:w-[380px]"
-            >
-              <figure className="flex h-full flex-col rounded-[26px] border border-ivory/10 bg-ivory/[0.04] p-7 backdrop-blur-sm transition-colors hover:border-rose-400/30">
-                <Quote size={26} className="text-rose-400" strokeWidth={1.4} />
-                <div className="mt-4">
-                  <RatingStars rating={t.rating} size={15} />
-                </div>
-                <blockquote className="mt-4 flex-1 text-sm leading-relaxed text-ivory/75">
-                  “{t.text}”
-                </blockquote>
-                <figcaption className="mt-6 flex items-center justify-between border-t border-ivory/10 pt-4">
-                  <div>
-                    <p className="font-display text-lg">{t.name}</p>
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-ivory/45">
-                      {t.city}
-                    </p>
-                  </div>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-rose-300">
-                    <BadgeCheck size={12} />
-                    Verificada
-                  </span>
-                </figcaption>
-              </figure>
+        <div className="mt-14 grid gap-5 md:grid-cols-3">
+          {PROMISES.map((p, i) => (
+            <Reveal key={p.title} delay={i * 0.07}>
+              <div className="flex h-full flex-col rounded-[26px] border border-ivory/10 bg-ivory/[0.04] p-7 backdrop-blur-sm transition-colors hover:border-rose-400/30">
+                <p.icon size={26} className="text-rose-300" strokeWidth={1.5} />
+                <h3 className="mt-5 font-display text-xl">{p.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-ivory/60">
+                  {p.text}
+                </p>
+              </div>
             </Reveal>
           ))}
         </div>
+
+        {/* Rosto e nome de quem atende: mais convincente que qualquer selo */}
+        <Reveal delay={0.2}>
+          <div className="mx-auto mt-12 flex max-w-2xl flex-col items-center gap-6 rounded-[26px] border border-ivory/10 bg-ivory/[0.04] p-7 text-center sm:flex-row sm:text-left">
+            <span className="inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-rose-500/15 font-display text-2xl text-rose-300">
+              {SITE.representative.charAt(0)}
+            </span>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-rose-300">
+                Quem responde no WhatsApp
+              </p>
+              <h3 className="mt-2 font-display text-xl">
+                {SITE.representative}
+              </h3>
+              <p className="mt-1 text-sm leading-relaxed text-ivory/60">
+                Atende em {SITE.city}, tira dúvidas sobre fixação, família
+                olfativa e indica o perfume certo para cada ocasião.
+              </p>
+              <a
+                href={whatsappLink(
+                  "Olá! Vim pelo site e queria uma indicação de perfume.",
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center gap-2 rounded-full border border-ivory/20 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-ivory transition-colors hover:border-rose-400 hover:text-rose-300"
+              >
+                <MessageCircle size={14} /> Falar com a Neusa
+              </a>
+            </div>
+          </div>
+        </Reveal>
       </div>
     </section>
   );

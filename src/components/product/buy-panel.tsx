@@ -15,7 +15,12 @@ import {
 } from "lucide-react";
 import type { ProductListItem } from "@/lib/types";
 import { formatBRL, installmentsLabel } from "@/lib/format";
-import { whatsappLink } from "@/lib/site";
+import {
+  CARD_INSTALLMENTS,
+  FREE_SHIPPING_THRESHOLD_CENTS,
+  PIX_DISCOUNT_RATE,
+  whatsappLink,
+} from "@/lib/site";
 import { useCart } from "@/store/cart";
 
 export function BuyPanel({ product }: { product: ProductListItem }) {
@@ -23,7 +28,7 @@ export function BuyPanel({ product }: { product: ProductListItem }) {
   const [added, setAdded] = useState(false);
   const addItem = useCart((s) => s.addItem);
 
-  const pixPrice = Math.round(product.priceCents * 0.95);
+  const pixPrice = Math.round(product.priceCents * (1 - PIX_DISCOUNT_RATE));
   const inStock = product.stock > 0;
   const lowStock = product.stock > 0 && product.stock <= 10;
 
@@ -68,13 +73,20 @@ export function BuyPanel({ product }: { product: ProductListItem }) {
         </div>
         <p className="mt-2 flex items-center gap-2 text-sm text-noir-900/60">
           <CreditCard size={15} className="text-rose-500" />
-          {installmentsLabel(product.priceCents)}
+          {installmentsLabel(
+            product.priceCents,
+            CARD_INSTALLMENTS.interestFree,
+            CARD_INSTALLMENTS.max,
+          )}
         </p>
         <p className="mt-1.5 flex items-center gap-2 text-sm">
           <QrCode size={15} className="text-emerald-600" />
           <span>
             <strong className="text-emerald-700">{formatBRL(pixPrice)}</strong>{" "}
-            no PIX <span className="text-noir-900/50">(5% OFF)</span>
+            no PIX{" "}
+            <span className="text-noir-900/50">
+              ({Math.round(PIX_DISCOUNT_RATE * 100)}% OFF)
+            </span>
           </span>
         </p>
 
@@ -160,7 +172,7 @@ export function BuyPanel({ product }: { product: ProductListItem }) {
         <div className="mt-5 grid grid-cols-2 gap-3 border-t border-noir-900/8 pt-5 text-xs text-noir-900/60">
           <p className="flex items-center gap-2">
             <Truck size={14} className="text-rose-500" />
-            Frete grátis acima de R$ 399
+            Frete grátis acima de {formatBRL(FREE_SHIPPING_THRESHOLD_CENTS)}
           </p>
           <p className="flex items-center gap-2">
             <ShieldCheck size={14} className="text-rose-500" />

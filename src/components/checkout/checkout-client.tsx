@@ -9,7 +9,6 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
-  CreditCard,
   Loader2,
   LockKeyhole,
   MessageCircle,
@@ -21,6 +20,7 @@ import {
 import { cx, formatBRL, maskCep, maskPhone } from "@/lib/format";
 import {
   FREE_SHIPPING_THRESHOLD_CENTS,
+  PIX_DISCOUNT_RATE,
   SHIPPING_FLAT_CENTS,
 } from "@/lib/site";
 import { useCart } from "@/store/cart";
@@ -30,7 +30,7 @@ const UFS = [
   "PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO",
 ];
 
-type PaymentMethod = "pix" | "card" | "whatsapp";
+type PaymentMethod = "pix" | "whatsapp";
 
 type FormState = {
   name: string;
@@ -44,18 +44,17 @@ type FormState = {
   state: string;
 };
 
-type CardState = {
-  number: string;
-  holder: string;
-  expiry: string;
-  cvv: string;
-  installments: number;
+type OrderResponse = {
+  code: string;
+  token: string;
+  totalCents: number;
+  error?: string;
 };
 
 const STEPS = [
   { label: "Identificação", icon: MessageCircle },
   { label: "Entrega", icon: Truck },
-  { label: "Pagamento", icon: CreditCard },
+  { label: "Pagamento", icon: ShieldCheck },
 ];
 
 function Field({
@@ -83,19 +82,6 @@ function Field({
 const inputCls =
   "w-full rounded-2xl border border-noir-900/12 bg-white px-4 py-3 text-sm placeholder:text-noir-900/35 focus:border-rose-400 focus:outline-none transition-colors";
 
-function maskCardNumber(v: string) {
-  return v
-    .replace(/\D/g, "")
-    .slice(0, 16)
-    .replace(/(\d{4})(?=\d)/g, "$1 ");
-}
-
-function maskExpiry(v: string) {
-  const d = v.replace(/\D/g, "").slice(0, 4);
-  if (d.length <= 2) return d;
-  return `${d.slice(0, 2)}/${d.slice(2)}`;
-}
-
 export function CheckoutClient() {
   const router = useRouter();
   const { items, hasHydrated, clear } = useCart();
@@ -113,13 +99,6 @@ export function CheckoutClient() {
     city: "",
     state: "PR",
   });
-  const [card, setCard] = useState<CardState>({
-    number: "",
-    holder: "",
-    expiry: "",
-    cvv: "",
-    installments: 10,
-  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -131,7 +110,7 @@ export function CheckoutClient() {
         ? 0
         : SHIPPING_FLAT_CENTS;
     const discount =
-      payment === "pix" ? Math.round(subtotal * 0.05) : 0;
+      payment === "pix" ? Math.round(subtotal * PIX_DISCOUNT_RATE) : 0;
     return { subtotal, shipping, discount, total: subtotal + shipping - discount };
   }, [items, payment]);
 
@@ -153,13 +132,6 @@ export function CheckoutClient() {
       if (!form.number.trim()) e.number = "Nº";
       if (form.city.trim().length < 2) e.city = "Informe a cidade";
     }
-    if (s === 2 && payment === "card") {
-      if (card.number.replace(/\D/g, "").length !== 16)
-        e.cardNumber = "Número de cartão inválido";
-      if (card.holder.trim().length < 5) e.holder = "Nome impresso no cartão";
-      if (!/^\d{2}\/\d{2}$/.test(card.expiry)) e.expiry = "MM/AA";
-      if (card.cvv.replace(/\D/g, "").length < 3) e.cvv = "CVV";
-    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -180,14 +152,15 @@ export function CheckoutClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customer: form,
-          items,
+          // O servidor recalcula preço, frete e desconto a partir do banco.
+          items: items.map((i) => ({ slug: i.slug, qty: i.qty })),
           paymentMethod: payment,
         }),
       });
-      const data = await res.json();
+      const data = (await res.json()) as OrderResponse;
       if (!res.ok) throw new Error(data.error ?? "Erro ao finalizar");
       clear();
-      router.push(`/pedido/${data.code}`);
+      router.push(`/pedido/${data.code}?t=${data.token}`);
     } catch (err) {
       setSubmitError(
         err instanceof Error ? err.message : "Erro ao finalizar o pedido.",
@@ -239,7 +212,7 @@ export function CheckoutClient() {
           </div>
           <p className="inline-flex items-center gap-2 text-xs text-noir-900/55">
             <LockKeyhole size={14} className="text-emerald-600" />
-            Ambiente seguro · dados protegidos
+            Conexão segura · dados usados apenas para a entrega
           </p>
         </div>
 
@@ -297,7 +270,7 @@ export function CheckoutClient() {
                 >
                   <h2 className="font-display text-2xl">Seus dados</h2>
                   <p className="mt-1 text-sm text-noir-900/55">
-                    Usaremos para confirmar seu pedido e enviar novidades.
+                    Usamos para confirmar o pedido e combinar a entrega.
                   </p>
                   <div className="mt-6 grid gap-5">
                     <Field label="Nome completo*" error={errors.name}>
@@ -343,19 +316,58 @@ export function CheckoutClient() {
                   exit={{ opacity: 0, x: -24 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <h2 className="font-display text-2xl">Endereço de entrega</h2>
+                  <h2 className="font-display text-2xl">Entrega</h2>
                   <p className="mt-1 text-sm text-noir-900/55">
-                    Enviamos para todo o Brasil com código de rastreio.
+                    Enviamos para todo o Brasil com rastreio.
                   </p>
                   <div className="mt-6 grid gap-5">
-                    <div className="grid gap-5 sm:grid-cols-[1fr_140px]">
+                    <div className="grid gap-5 sm:grid-cols-[180px_1fr]">
                       <Field label="CEP*" error={errors.cep}>
                         <input
                           inputMode="numeric"
                           className={inputCls}
                           value={form.cep}
                           onChange={(e) => set("cep", maskCep(e.target.value))}
-                          placeholder="86000-000"
+                          placeholder="00000-000"
+                          autoComplete="postal-code"
+                        />
+                      </Field>
+                      <Field label="Endereço*" error={errors.address}>
+                        <input
+                          className={inputCls}
+                          value={form.address}
+                          onChange={(e) => set("address", e.target.value)}
+                          placeholder="Rua, avenida..."
+                          autoComplete="street-address"
+                        />
+                      </Field>
+                    </div>
+                    <div className="grid gap-5 sm:grid-cols-[140px_1fr]">
+                      <Field label="Número*" error={errors.number}>
+                        <input
+                          className={inputCls}
+                          value={form.number}
+                          onChange={(e) => set("number", e.target.value)}
+                          placeholder="123"
+                        />
+                      </Field>
+                      <Field label="Complemento">
+                        <input
+                          className={inputCls}
+                          value={form.complement}
+                          onChange={(e) => set("complement", e.target.value)}
+                          placeholder="Apto, bloco, referência"
+                        />
+                      </Field>
+                    </div>
+                    <div className="grid gap-5 sm:grid-cols-[1fr_120px]">
+                      <Field label="Cidade*" error={errors.city}>
+                        <input
+                          className={inputCls}
+                          value={form.city}
+                          onChange={(e) => set("city", e.target.value)}
+                          placeholder="Londrina"
+                          autoComplete="address-level2"
                         />
                       </Field>
                       <Field label="UF*">
@@ -372,49 +384,6 @@ export function CheckoutClient() {
                         </select>
                       </Field>
                     </div>
-                    <div className="grid gap-5 sm:grid-cols-[1fr_140px]">
-                      <Field label="Endereço*" error={errors.address}>
-                        <input
-                          className={inputCls}
-                          value={form.address}
-                          onChange={(e) => set("address", e.target.value)}
-                          placeholder="Rua, avenida…"
-                          autoComplete="street-address"
-                        />
-                      </Field>
-                      <Field label="Número*" error={errors.number}>
-                        <input
-                          className={inputCls}
-                          value={form.number}
-                          onChange={(e) => set("number", e.target.value)}
-                          placeholder="123"
-                        />
-                      </Field>
-                    </div>
-                    <div className="grid gap-5 sm:grid-cols-2">
-                      <Field label="Complemento">
-                        <input
-                          className={inputCls}
-                          value={form.complement}
-                          onChange={(e) => set("complement", e.target.value)}
-                          placeholder="Apto, bloco (opcional)"
-                        />
-                      </Field>
-                      <Field label="Cidade*" error={errors.city}>
-                        <input
-                          className={inputCls}
-                          value={form.city}
-                          onChange={(e) => set("city", e.target.value)}
-                          placeholder="Londrina"
-                        />
-                      </Field>
-                    </div>
-                    <p className="flex items-center gap-2 rounded-2xl bg-blush-50 px-4 py-3 text-xs text-noir-900/60">
-                      <Truck size={15} className="text-rose-500" />
-                      {totals.subtotal >= FREE_SHIPPING_THRESHOLD_CENTS
-                        ? "Seu pedido tem frete grátis!"
-                        : `Frete fixo de ${formatBRL(SHIPPING_FLAT_CENTS)} — grátis acima de ${formatBRL(FREE_SHIPPING_THRESHOLD_CENTS)}`}
-                    </p>
                   </div>
                 </motion.div>
               )}
@@ -433,163 +402,71 @@ export function CheckoutClient() {
                     confirmação do pedido.
                   </p>
 
-                  <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                    {(
-                      [
-                        {
-                          id: "pix",
-                          icon: QrCode,
-                          title: "PIX",
-                          desc: "5% OFF · aprovação instantânea",
-                          highlight: true,
-                        },
-                        {
-                          id: "card",
-                          icon: CreditCard,
-                          title: "Cartão",
-                          desc: "em até 10x sem juros",
-                        },
-                        {
-                          id: "whatsapp",
-                          icon: MessageCircle,
-                          title: "WhatsApp",
-                          desc: "combine com a Neusa",
-                        },
-                      ] as const
-                    ).map((m) => (
-                      <button
-                        key={m.id}
-                        type="button"
-                        onClick={() => setPayment(m.id)}
-                        className={cx(
-                          "relative rounded-2xl border p-4 text-left transition-all",
-                          payment === m.id
-                            ? "border-rose-500 bg-blush-50 ring-2 ring-rose-200"
-                            : "border-noir-900/12 bg-white hover:border-noir-900/30",
-                        )}
-                      >
-                        {m.id === "pix" && (
-                          <span className="absolute -top-2.5 right-3 rounded-full bg-emerald-600 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-white">
-                            −5%
-                          </span>
-                        )}
-                        <m.icon
-                          size={20}
-                          className={cx(
-                            payment === m.id ? "text-rose-600" : "text-noir-900/50",
-                          )}
-                        />
-                        <p className="mt-2 text-sm font-semibold uppercase tracking-[0.14em]">
-                          {m.title}
-                        </p>
-                        <p className="mt-0.5 text-xs text-noir-900/50">{m.desc}</p>
-                      </button>
-                    ))}
+                  <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => setPayment("pix")}
+                      className={cx(
+                        "relative rounded-2xl border p-4 text-left transition-all",
+                        payment === "pix"
+                          ? "border-rose-500 bg-blush-50 ring-2 ring-rose-200"
+                          : "border-noir-900/12 bg-white hover:border-noir-900/30",
+                      )}
+                    >
+                      <span className="absolute -top-2.5 right-3 rounded-full bg-emerald-600 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-white">
+                        −{Math.round(PIX_DISCOUNT_RATE * 100)}%
+                      </span>
+                      <QrCode
+                        size={20}
+                        className={payment === "pix" ? "text-rose-600" : "text-noir-900/50"}
+                      />
+                      <p className="mt-2 text-sm font-semibold uppercase tracking-[0.14em]">
+                        PIX
+                      </p>
+                      <p className="mt-0.5 text-xs text-noir-900/50">
+                        QR Code na hora · aprovação instantânea
+                      </p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setPayment("whatsapp")}
+                      className={cx(
+                        "rounded-2xl border p-4 text-left transition-all",
+                        payment === "whatsapp"
+                          ? "border-rose-500 bg-blush-50 ring-2 ring-rose-200"
+                          : "border-noir-900/12 bg-white hover:border-noir-900/30",
+                      )}
+                    >
+                      <MessageCircle
+                        size={20}
+                        className={payment === "whatsapp" ? "text-rose-600" : "text-noir-900/50"}
+                      />
+                      <p className="mt-2 text-sm font-semibold uppercase tracking-[0.14em]">
+                        WhatsApp
+                      </p>
+                      <p className="mt-0.5 text-xs text-noir-900/50">
+                        combine com a Neusa
+                      </p>
+                    </button>
                   </div>
 
                   <AnimatePresence initial={false}>
-                    {payment === "card" && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.35 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="mt-6 grid gap-5 rounded-2xl border border-noir-900/8 bg-ivory/60 p-5">
-                          <Field label="Número do cartão*" error={errors.cardNumber}>
-                            <input
-                              inputMode="numeric"
-                              className={inputCls}
-                              value={card.number}
-                              onChange={(e) =>
-                                setCard((c) => ({
-                                  ...c,
-                                  number: maskCardNumber(e.target.value),
-                                }))
-                              }
-                              placeholder="0000 0000 0000 0000"
-                            />
-                          </Field>
-                          <Field label="Nome impresso no cartão*" error={errors.holder}>
-                            <input
-                              className={inputCls}
-                              value={card.holder}
-                              onChange={(e) =>
-                                setCard((c) => ({ ...c, holder: e.target.value.toUpperCase() }))
-                              }
-                              placeholder="MARIA SILVA"
-                            />
-                          </Field>
-                          <div className="grid gap-5 sm:grid-cols-3">
-                            <Field label="Validade*" error={errors.expiry}>
-                              <input
-                                inputMode="numeric"
-                                className={inputCls}
-                                value={card.expiry}
-                                onChange={(e) =>
-                                  setCard((c) => ({ ...c, expiry: maskExpiry(e.target.value) }))
-                                }
-                                placeholder="MM/AA"
-                              />
-                            </Field>
-                            <Field label="CVV*" error={errors.cvv}>
-                              <input
-                                inputMode="numeric"
-                                className={inputCls}
-                                value={card.cvv}
-                                onChange={(e) =>
-                                  setCard((c) => ({
-                                    ...c,
-                                    cvv: e.target.value.replace(/\D/g, "").slice(0, 4),
-                                  }))
-                                }
-                                placeholder="123"
-                              />
-                            </Field>
-                            <Field label="Parcelas">
-                              <select
-                                className={inputCls}
-                                value={card.installments}
-                                onChange={(e) =>
-                                  setCard((c) => ({
-                                    ...c,
-                                    installments: Number(e.target.value),
-                                  }))
-                                }
-                              >
-                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
-                                  <option key={n} value={n}>
-                                    {n}x de{" "}
-                                    {formatBRL(
-                                      Math.round(
-                                        (totals.subtotal + totals.shipping) / n,
-                                      ),
-                                    )}
-                                  </option>
-                                ))}
-                              </select>
-                            </Field>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-
                     {payment === "pix" && (
-                      <motion.p
+                      <motion.div
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="mt-5 flex items-start gap-2 rounded-2xl bg-emerald-50 px-4 py-3 text-xs leading-relaxed text-emerald-800"
                       >
                         <QrCode size={15} className="mt-0.5 shrink-0" />
-                        Após confirmar o pedido, você recebe a chave PIX e o valor
-                        com desconto. Seu pedido é separado assim que o pagamento
-                        é identificado.
-                      </motion.p>
+                        Ao confirmar, você recebe o QR Code PIX já com o valor e
+                        o número do pedido preenchidos. Seu pedido é separado
+                        assim que o pagamento é identificado.
+                      </motion.div>
                     )}
 
                     {payment === "whatsapp" && (
-                      <motion.p
+                      <motion.div
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="mt-5 flex items-start gap-2 rounded-2xl bg-blush-100 px-4 py-3 text-xs leading-relaxed text-noir-900/70"
@@ -598,9 +475,15 @@ export function CheckoutClient() {
                         Ao confirmar, abrimos uma conversa no WhatsApp com o
                         resumo do seu pedido para combinar pagamento e entrega
                         diretamente com a Neusa.
-                      </motion.p>
+                      </motion.div>
                     )}
                   </AnimatePresence>
+
+                  <p className="mt-5 flex items-start gap-2 rounded-2xl bg-ivory px-4 py-3 text-[11px] leading-relaxed text-noir-900/50">
+                    <LockKeyhole size={13} className="mt-0.5 shrink-0" />
+                    Não pedimos dados de cartão neste site. Pagamentos com
+                    cartão são combinados diretamente com a loja no WhatsApp.
+                  </p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -660,7 +543,7 @@ export function CheckoutClient() {
           </div>
 
           {/* Summary */}
-          <aside className="lg:sticky lg:top-28 h-fit rounded-[28px] border border-noir-900/8 bg-white p-6 sm:p-7">
+          <aside className="h-fit rounded-[28px] border border-noir-900/8 bg-white p-6 sm:p-7 lg:sticky lg:top-28">
             <h2 className="font-display text-2xl">Resumo do pedido</h2>
             <ul className="mt-5 space-y-4">
               {items.map((item) => (
@@ -714,7 +597,7 @@ export function CheckoutClient() {
               </div>
               {totals.discount > 0 && (
                 <div className="flex justify-between text-emerald-700">
-                  <dt>Desconto PIX (5%)</dt>
+                  <dt>Desconto PIX ({Math.round(PIX_DISCOUNT_RATE * 100)}%)</dt>
                   <dd>−{formatBRL(totals.discount)}</dd>
                 </div>
               )}
@@ -728,10 +611,20 @@ export function CheckoutClient() {
               </div>
             </dl>
 
+            {totals.shipping > 0 && (
+              <p className="mt-3 rounded-xl bg-blush-50 px-3 py-2 text-[11px] text-noir-900/60">
+                Faltam{" "}
+                <strong>
+                  {formatBRL(FREE_SHIPPING_THRESHOLD_CENTS - totals.subtotal)}
+                </strong>{" "}
+                para o frete grátis.
+              </p>
+            )}
+
             <div className="mt-6 space-y-2 rounded-2xl bg-blush-50 p-4 text-xs text-noir-900/60">
               <p className="flex items-center gap-2">
                 <ShieldCheck size={14} className="text-rose-500" />
-                Produtos 100% originais e lacrados
+                Produtos originais, lacrados e com nota
               </p>
               <p className="flex items-center gap-2">
                 <Truck size={14} className="text-rose-500" />

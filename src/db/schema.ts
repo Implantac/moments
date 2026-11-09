@@ -84,3 +84,19 @@ export const orders = pgTable("orders", {
 export type Product = typeof products.$inferSelect;
 export type Review = typeof reviews.$inferSelect;
 export type Order = typeof orders.$inferSelect;
+
+/**
+ * Lista de novidades. Separada das tabelas de catálogo para deixar claro
+ * que este dado tem finalidade própria (marketing) e consentimento registrado.
+ */
+export const subscribers = pgTable("subscribers", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  source: text("source").notNull().default("site"),
+  /** Consentimento explícito (LGPD art. 8º). */
+  consentAt: timestamp("consent_at", { withTimezone: true }).notNull().defaultNow(),
+  unsubscribedAt: timestamp("unsubscribed_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type Subscriber = typeof subscribers.$inferSelect;

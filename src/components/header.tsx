@@ -14,8 +14,8 @@ import {
   X,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
-import { cx } from "@/lib/format";
-import { SITE, whatsappLink } from "@/lib/site";
+import { cx, formatBRL } from "@/lib/format";
+import { FREE_SHIPPING_THRESHOLD_CENTS, PIX_DISCOUNT_RATE, SITE, whatsappLink } from "@/lib/site";
 import { useCart, useCartTotals } from "@/store/cart";
 
 const LINKS = [
@@ -49,10 +49,14 @@ export function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
-    setMenuOpen(false);
-    setSearchOpen(false);
-  }, [pathname]);
+  // Fecha menu e busca quando a rota muda, sem setState dentro de efeito:
+  // guardamos o pathname que estava aberto e derivamos o estado.
+  const [openedAtPath, setOpenedAtPath] = useState(pathname);
+  if (openedAtPath !== pathname) {
+    setOpenedAtPath(pathname);
+    if (menuOpen) setMenuOpen(false);
+    if (searchOpen) setSearchOpen(false);
+  }
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
@@ -69,11 +73,11 @@ export function Header() {
           <div className="mx-auto flex max-w-7xl items-center justify-center gap-4 whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.14em] sm:gap-8 sm:text-[10.5px] sm:tracking-[0.22em]">
             <span className="inline-flex items-center gap-2">
               <Truck size={13} className="text-rose-300" />
-              Frete grátis acima de R$ 399
+              Frete grátis acima de {formatBRL(FREE_SHIPPING_THRESHOLD_CENTS)}
             </span>
             <span className="hidden items-center gap-2 sm:inline-flex">
               <QrCode size={13} className="text-rose-300" />
-              5% OFF no PIX
+              {Math.round(PIX_DISCOUNT_RATE * 100)}% OFF no PIX
             </span>
             <a
               href={whatsappLink("Olá! Vim pelo site da Moments Paris.")}

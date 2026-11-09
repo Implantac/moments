@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { sql } from "drizzle-orm";
 import { db } from "./index";
-import { products, reviews } from "./schema";
+import { products } from "./schema";
 
 async function seed() {
   const [{ value }] = await db
@@ -226,63 +226,21 @@ async function seed() {
     return id;
   };
 
-  await db.insert(reviews).values([
-    // Good Girl
-    { productId: pid("good-girl-carolina-herrera"), author: "Ana Elise M.", city: "Londrina, PR", rating: 5, title: "Simplesmente perfeito", body: "Chegou super rápido, lacrado e com nota. O cheiro é marcante sem ser enjoativo — recebo elogios o dia inteiro. A Neusa foi muito atenciosa no WhatsApp.", createdAt: new Date("2026-01-18T14:22:00-03:00") },
-    { productId: pid("good-girl-carolina-herrera"), author: "Camila R.", city: "Maringá, PR", rating: 5, title: "Meu perfume favorito", body: "Segunda vez que compro na Moments Paris. Produto original, bem embalado e ainda veio com uma amostrinha de brinde. Recomendo de olhos fechados.", createdAt: new Date("2025-12-30T09:10:00-03:00") },
-    { productId: pid("good-girl-carolina-herrera"), author: "Jéssica T.", city: "Curitiba, PR", rating: 4, title: "Muito bom", body: "Fixação excelente, dura o dia todo na pele. Só achei a caixa um pouco amassada no transporte, mas o frasco estava intacto e protegido.", createdAt: new Date("2025-11-05T18:47:00-03:00") },
-    { productId: pid("good-girl-carolina-herrera"), author: "Renata S.", city: "São Paulo, SP", rating: 5, title: "Compra certa", body: "Preço melhor que nas lojas de shopping e chegou antes do prazo. Virei cliente fiel.", createdAt: new Date("2025-09-21T11:03:00-03:00") },
+  // ---------------------------------------------------------------
+  // Avaliações NÃO são populadas de propósito.
+  //
+  // O seed antigo criava 34 avaliações fictícias ("Ana Elise M.",
+  // "Camila R."...). Publicar depoimento inventado em loja real é
+  // publicidade enganosa (CDC art. 37) e destrói a confiança da
+  // categoria mais sensível do varejo: perfume importado.
+  //
+  // O banco começa vazio e as avaliações passam a vir de clientes reais.
+  // Se quiser importar avaliações verdadeiras do Instagram/WhatsApp,
+  // peça autorização por escrito e insira com `approved: true`.
+  // ---------------------------------------------------------------
 
-    // La Vie Est Belle
-    { productId: pid("la-vie-est-belle-lancome"), author: "Patrícia G.", city: "Cambé, PR", rating: 5, title: "Doce na medida certa", body: "É docinho mas elegante, nada enjoativo. Uso para trabalhar e para sair. A projeção é ótima e o frasco é lindo demais.", createdAt: new Date("2026-01-09T16:35:00-03:00") },
-    { productId: pid("la-vie-est-belle-lancome"), author: "Fernanda L.", city: "Belo Horizonte, MG", rating: 5, title: "Cheiro de felicidade", body: "O nome faz jus. Toda vez que uso, me perguntam qual é. Fixou mais de 10 horas em mim.", createdAt: new Date("2025-12-12T20:14:00-03:00") },
-    { productId: pid("la-vie-est-belle-lancome"), author: "Marcos V.", city: "Londrina, PR", rating: 5, title: "Presente perfeito", body: "Comprei de presente para minha esposa no nosso aniversário. Veio embalado para presente, lindo. Ela amou e eu virei herói.", createdAt: new Date("2025-10-28T13:56:00-03:00") },
-    { productId: pid("la-vie-est-belle-lancome"), author: "Bruna C.", city: "Ribeirão Preto, SP", rating: 4, title: "Muito satisfeita", body: "Original, lacrado, entrega rápida para o interior de SP. Tiraria 5 estrelas se tivesse opção de refil.", createdAt: new Date("2025-08-19T08:40:00-03:00") },
 
-    // Libre
-    { productId: pid("libre-yves-saint-laurent"), author: "Aline P.", city: "Londrina, PR", rating: 5, title: "Elegância em frasco", body: "A lavanda com a flor de laranjeira é uma combinação surreal de sofisticada. Me sinto poderosa usando. Entrega impecável.", createdAt: new Date("2026-02-02T10:05:00-03:00") },
-    { productId: pid("libre-yves-saint-laurent"), author: "Débora F.", city: "Apucarana, PR", rating: 5, title: "Virou minha assinatura", body: "Comprei amostra primeiro pelo WhatsApp e depois fechei o 90ml. Atendimento nota dez da Neusa.", createdAt: new Date("2025-12-05T15:27:00-03:00") },
-    { productId: pid("libre-yves-saint-laurent"), author: "Tatiane O.", city: "Curitiba, PR", rating: 4, title: "Fortinho, do jeito que eu gosto", body: "Projeta bastante nas duas primeiras horas, depois assenta e fica elegante. Só não borrife demais!", createdAt: new Date("2025-11-16T19:33:00-03:00") },
-    { productId: pid("libre-yves-saint-laurent"), author: "Mariana H.", city: "Porto Alegre, RS", rating: 5, title: "Original e lindo", body: "Conferi o lote no site da marca: produto 100% original. Chegou em 4 dias no RS. Pode confiar.", createdAt: new Date("2025-09-08T12:12:00-03:00") },
-
-    // Coco Mademoiselle
-    { productId: pid("coco-mademoiselle-chanel"), author: "Cristina A.", city: "Londrina, PR", rating: 5, title: "Clássico atemporal", body: "É Chanel, né? O cítrico com patchouli é inconfundível. Investimento que vale cada centavo — e aqui estava mais barato que no duty free.", createdAt: new Date("2026-01-25T17:48:00-03:00") },
-    { productId: pid("coco-mademoiselle-chanel"), author: "Luciana B.", city: "São Paulo, SP", rating: 4, title: "Sofisticação pura", body: "Perfume de presença, ideal para eventos à noite. A entrega foi rápida e o cuidado com a embalagem impressionou.", createdAt: new Date("2025-11-29T14:19:00-03:00") },
-    { productId: pid("coco-mademoiselle-chanel"), author: "Valéria N.", city: "Londrina, PR", rating: 5, title: "Presente da Neusa", body: "A Neusa me ajudou a escolher pelo perfil que eu descrevi. Acertou em cheio. Retoco nem preciso, fixa o dia todo.", createdAt: new Date("2025-10-11T09:52:00-03:00") },
-
-    // Sì
-    { productId: pid("si-giorgio-armani"), author: "Roberta N.", city: "Maringá, PR", rating: 5, title: "Meu segundo frasco", body: "O cassis com a rosa é viciante. Já é meu segundo frasco comprado aqui e o lote é sempre recente.", createdAt: new Date("2026-01-14T13:08:00-03:00") },
-    { productId: pid("si-giorgio-armani"), author: "Juliana E.", city: "Curitiba, PR", rating: 4, title: "Delicado e marcante", body: "Mais discreto que o Good Girl, perfeito para o dia a dia no escritório. Chegou tudo certinho.", createdAt: new Date("2025-12-19T16:44:00-03:00") },
-    { productId: pid("si-giorgio-armani"), author: "Simone R.", city: "Londrina, PR", rating: 5, title: "Amor à primeira borrifada", body: "Cheiro de mulher elegante. Comprei no PIX e ainda ganhei o desconto. Experiência perfeita.", createdAt: new Date("2025-09-27T11:37:00-03:00") },
-
-    // Sauvage
-    { productId: pid("sauvage-dior"), author: "Rafael C.", city: "Londrina, PR", rating: 5, title: "Monstro de fixação", body: "Borrifo de manhã e à noite ainda sinto. O ambroxan é surreal de bom. Melhor custo-benefício que encontrei, inclusive com frete grátis.", createdAt: new Date("2026-02-06T08:55:00-03:00") },
-    { productId: pid("sauvage-dior"), author: "Diego M.", city: "Curitiba, PR", rating: 5, title: "Original, lacrado", body: "Tinha receio de comprar online, mas veio com nota e selo de importação. Atendimento pelo WhatsApp respondeu na hora.", createdAt: new Date("2026-01-07T19:26:00-03:00") },
-    { productId: pid("sauvage-dior"), author: "Bruno F.", city: "Rolandia, PR", rating: 4, title: "Muito versátil", body: "Serve para trabalho e para balada. A projeção é forte nas primeiras horas. Recomendo o EDT para o clima do Paraná.", createdAt: new Date("2025-11-23T12:41:00-03:00") },
-    { productId: pid("sauvage-dior"), author: "Carla H.", city: "Londrina, PR", rating: 5, title: "Presente certeiro", body: "Comprei para o meu marido de Dia dos Namorados e ele não troca por nada. O cheiro é hipnotizante.", createdAt: new Date("2025-06-10T15:02:00-03:00") },
-
-    // 1 Million
-    { productId: pid("one-million-paco-rabanne"), author: "Thiago R.", city: "Londrina, PR", rating: 4, title: "O rei da noite", body: "Doce e potente, perfeito para festas. Uso no frio e a estela é enorme. Só cuidado para não exagerar nas borrifadas.", createdAt: new Date("2026-01-21T22:13:00-03:00") },
-    { productId: pid("one-million-paco-rabanne"), author: "Lucas B.", city: "Maringá, PR", rating: 5, title: "Chegou voando", body: "Pedido na segunda, chegou quinta. Frasco de ouro é lindo demais, dá até dó de usar. Perfume original com nota.", createdAt: new Date("2025-12-27T10:31:00-03:00") },
-    { productId: pid("one-million-paco-rabanne"), author: "André P.", city: "São Paulo, SP", rating: 5, title: "Clássico que não erra", body: "Canela com couro na medida. Recebo elogio toda vez que uso. Preço aqui está ótimo comparado com as grandes redes.", createdAt: new Date("2025-10-03T18:59:00-03:00") },
-
-    // Le Male
-    { productId: pid("le-male-jean-paul-gaultier"), author: "Eduardo K.", city: "Londrina, PR", rating: 5, title: "Nostalgia boa", body: "Usei nos anos 2000 e continua impecável. A baunilha com lavanda é única. Entrega rápida e produto original.", createdAt: new Date("2026-01-11T09:44:00-03:00") },
-    { productId: pid("le-male-jean-paul-gaultier"), author: "Gustavo L.", city: "Curitiba, PR", rating: 4, title: "Confortável e sedutor", body: "É doce mas masculino, ótimo para encontros. No frio ele brilha. O frasco de torso é puro design.", createdAt: new Date("2025-11-08T20:21:00-03:00") },
-    { productId: pid("le-male-jean-paul-gaultier"), author: "Vinícius A.", city: "Arapongas, PR", rating: 5, title: "Vale cada centavo", body: "125ml por esse preço é achado. Fixação de 8h tranquilo na minha pele. Recomendo demais.", createdAt: new Date("2025-09-14T14:37:00-03:00") },
-
-    // Eros
-    { productId: pid("eros-versace"), author: "Matheus D.", city: "Londrina, PR", rating: 5, title: "Fresco e doce ao mesmo tempo", body: "A maçã com a baunilha é uma combinação viciante. Uso para faculdade e para sair à noite. Versátil demais.", createdAt: new Date("2026-02-09T13:26:00-03:00") },
-    { productId: pid("eros-versace"), author: "Henrique T.", city: "Cornélio Procópio, PR", rating: 4, title: "Ótimo custo-benefício", body: "Na promoção valeu muito. Projeção forte nas duas primeiras horas, depois fica rente à pele de um jeito agradável.", createdAt: new Date("2025-12-02T17:53:00-03:00") },
-    { productId: pid("eros-versace"), author: "Ígor S.", city: "Curitiba, PR", rating: 5, title: "Impecável", body: "Produto original, lote recente, entrega rápida e ainda tirei dúvidas pelo WhatsApp antes de comprar. Nota dez.", createdAt: new Date("2025-10-19T11:18:00-03:00") },
-
-    // Wanted
-    { productId: pid("azzaro-wanted"), author: "Rodrigo P.", city: "Londrina, PR", rating: 4, title: "Cítrico com personalidade", body: "O gengibre com o limão refresca muito, ideal para o calor. No verão não saio de casa sem ele.", createdAt: new Date("2026-01-28T16:09:00-03:00") },
-    { productId: pid("azzaro-wanted"), author: "Caio M.", city: "Maringá, PR", rating: 5, title: "Meu xodó do dia a dia", body: "Assinatura perfeita para o escritório: fresco, elegante e com boa fixação. Paguei no PIX com desconto, melhor negócio impossível.", createdAt: new Date("2025-12-15T09:34:00-03:00") },
-    { productId: pid("azzaro-wanted"), author: "Leonardo F.", city: "Londrina, PR", rating: 5, title: "Primeira compra de muitas", body: "Conheci a loja pelo Instagram da Neusa e já virei cliente. Frasco lindo, perfume melhor ainda.", createdAt: new Date("2025-11-26T18:05:00-03:00") },
-  ]);
-
-  console.log(`Seed concluído: ${inserted.length} produtos e avaliações inseridas.`);
+  console.log(`Seed concluído: ${inserted.length} produtos (sem avaliações fictícias).`);
   process.exit(0);
 }
 
