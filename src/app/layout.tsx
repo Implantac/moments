@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Analytics } from "@vercel/analytics/next";
+import { WebAnalytics } from "@/components/web-analytics";
 import type { ReactNode } from "react";
 import { Jost, Playfair_Display } from "next/font/google";
 import { CartDrawer } from "@/components/cart-drawer";
@@ -78,7 +78,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Footer />
         <WhatsAppFloat />
         {/* Analytics sem cookie: conta visitas e conversão sem banner de LGPD. */}
-        <Analytics />
+        <WebAnalytics />
       </body>
     </html>
   );
