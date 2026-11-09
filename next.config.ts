@@ -36,4 +36,15 @@ const nextConfig: NextConfig = {
   },
 };
 
+// A Vercel não inclui `public/` novo criado no buildCommand, então o site
+// institucional (HTML puro, em /site) é servido direto do repositório por
+// rewrite, sem passar pelo React nem pelo router do Next.
+// Força a barra final: sem ela, os caminhos relativos do HTML
+// (assets/site.css) apontariam para a raiz da loja.
+nextConfig.trailingSlash = true;
+nextConfig.rewrites = async () => [
+  { source: "/site", destination: "/site/index.html" },
+  { source: "/site/:path*", destination: "/site/:path*" },
+];
+
 export default nextConfig;

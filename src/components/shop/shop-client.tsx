@@ -289,9 +289,9 @@ export function ShopClient({
           </p>
           <h1 className="mt-3 font-display text-4xl sm:text-6xl">{heading}</h1>
           <p className="mt-3 max-w-xl text-sm text-noir-900/55 sm:text-base">
-            Originais, lacrados e com nota. Pague no PIX com
-            {Math.round(PIX_DISCOUNT_RATE * 100)}% de desconto ou combine o cartão
-            no WhatsApp.
+            {`Originais, lacrados e com nota. Pague no PIX com ${Math.round(
+              PIX_DISCOUNT_RATE * 100,
+            )}% de desconto ou combine o cartão no WhatsApp.`}
           </p>
         </div>
       </div>

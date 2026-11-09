@@ -1,17 +1,10 @@
 /* ==========================================================================
-   Moments Paris — dados que mudam entre ambientes
+   Moments Paris — endereços do site institucional
    --------------------------------------------------------------------------
-   Este é o ÚNICO arquivo que precisa ser editado para apontar o site para
-   outro endereço de loja ou de domínio próprio. O site.js lê daqui e reescreve
-   os links sozinho; se o arquivo não carregar, os links ficam como estão no
-   HTML (nada quebra).
-
-   Depois de publicar na Vercel, trocar:
-     siteUrl: "https://moments-site.vercel.app"
-   Quando a loja sair daqui para o domínio dela, trocar:
-     storeUrl: "https://www.dominio-da-loja.com.br"
+   Depois do novo deploy, a loja vive na raiz de
+   https://moments-site-ten.vercel.app e o site em /site.
    ========================================================================== */
 window.MOMENTS = {
-  storeUrl: "https://www.seudominio.com.br",   /* troque pelo domínio da loja */
-  siteUrl: ""                                   /* preencha depois de publicar; o site.js usa para og:url */
+  storeUrl: "https://moments-site-ten.vercel.app",
+  siteUrl: "https://moments-site-ten.vercel.app/site"
 };
