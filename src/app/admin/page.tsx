@@ -16,6 +16,7 @@ import { db } from "@/db";
 import { orders } from "@/db/schema";
 import { ADMIN_COOKIE, verifyAdminCookie } from "@/lib/admin-auth";
 import { orderPath } from "@/lib/order-token";
+import { STATUS_LABEL } from "@/lib/order-status";
 import { formatBRL } from "@/lib/format";
 import { logoutAction, updateStatusAction } from "./actions";
 import { StatusSelect } from "./status-select";
@@ -26,15 +27,6 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
-
-const STATUS_LABEL: Record<string, string> = {
-  aguardando_pagamento: "Aguardando PIX",
-  aguardando_contato: "Aguardando contato",
-  pago: "Pago",
-  enviado: "Enviado",
-  entregue: "Entregue",
-  cancelado: "Cancelado",
-};
 
 export default async function AdminPage({
   searchParams,

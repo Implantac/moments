@@ -4,11 +4,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   CheckCircle2,
+  Clock,
   Copy,
   MapPin,
   MessageCircle,
+  Package,
   ShieldAlert,
   Truck,
+  XCircle,
 } from "lucide-react";
 import { CopyButton } from "@/components/order/copy-pix";
 import { PixPayment } from "@/components/order/pix-payment";
@@ -16,6 +19,11 @@ import { formatBRL, formatDatePtBr } from "@/lib/format";
 import { getOrderByCode } from "@/lib/data";
 import { buildPixPayload } from "@/lib/pix";
 import { verifyOrderToken } from "@/lib/order-token";
+import {
+  STATUS_CUSTOMER_HINT,
+  TIMELINE,
+  statusLabel,
+} from "@/lib/order-status";
 import { SITE, whatsappLink } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -49,6 +57,13 @@ export default async function OrderPage({
     .map((i) => `${i.qty}x ${i.name}`)
     .join(", ")}. Podemos confirmar?`;
 
+  const status = order.status;
+  const isCanceled = status === "cancelado";
+  const isPaidOrLater = status === "pago" || status === "enviado" || status === "entregue";
+  // O QR só faz sentido enquanto o pedido espera pagamento: depois disso ele
+  // confundiria o cliente (parecia que o pedido não tinha sido pago).
+  const showPix = order.paymentMethod === "pix" && status === "aguardando_pagamento";
+
   const pixPayload =
     order.paymentMethod === "pix"
       ? buildPixPayload({
@@ -65,8 +80,18 @@ export default async function OrderPage({
       <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
         {/* Hero */}
         <div className="text-center">
-          <span className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-            <CheckCircle2 size={42} strokeWidth={1.6} />
+          <span
+            className={
+              isCanceled
+                ? "inline-flex h-20 w-20 items-center justify-center rounded-full bg-rose-100 text-rose-600"
+                : "inline-flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-emerald-600"
+            }
+          >
+            {isCanceled ? (
+              <XCircle size={42} strokeWidth={1.6} />
+            ) : (
+              <CheckCircle2 size={42} strokeWidth={1.6} />
+            )}
           </span>
           <p className="mt-6 text-[11px] font-medium uppercase tracking-[0.35em] text-rose-600">
             Pedido {order.code}
@@ -78,11 +103,14 @@ export default async function OrderPage({
             Seu pedido foi registrado em {formatDatePtBr(order.createdAt)}.
             Guarde este link — ele é a sua via de acompanhamento.
           </p>
+
+          {/* Status atual: é o que o painel da loja promete ao cliente. */}
+          <OrderProgress status={status} />
         </div>
 
         {/* Payment */}
         <div className="mt-10 rounded-[28px] border border-noir-900/8 bg-white p-7 sm:p-9">
-          {pixPayload && (
+          {showPix && pixPayload && (
             <PixPayment
               payload={pixPayload}
               amountCents={order.totalCents}
@@ -90,7 +118,45 @@ export default async function OrderPage({
             />
           )}
 
-          {order.paymentMethod === "whatsapp" && (
+          {isPaidOrLater && (
+            <div className="text-center">
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+                {status === "enviado" ? <Truck size={22} /> : <Package size={22} />}
+              </span>
+              <h2 className="mt-4 font-display text-2xl">
+                {status === "enviado"
+                  ? "Seu pedido está a caminho"
+                  : status === "entregue"
+                    ? "Pedido entregue"
+                    : "Pagamento confirmado"}
+              </h2>
+              <p className="mx-auto mt-2 max-w-md text-sm text-noir-900/55">
+                {STATUS_CUSTOMER_HINT[status]}
+              </p>
+            </div>
+          )}
+
+          {isCanceled && (
+            <div className="text-center">
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
+                <XCircle size={22} />
+              </span>
+              <h2 className="mt-4 font-display text-2xl">Pedido cancelado</h2>
+              <p className="mx-auto mt-2 max-w-md text-sm text-noir-900/55">
+                {STATUS_CUSTOMER_HINT.cancelado}
+              </p>
+              <a
+                href={whatsappLink(`Olá! Preciso de ajuda com o pedido ${order.code}.`)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 inline-flex items-center gap-2 rounded-full border border-noir-900/12 px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-noir-900 transition-colors hover:border-emerald-600 hover:text-emerald-700"
+              >
+                <MessageCircle size={15} /> Falar com a loja
+              </a>
+            </div>
+          )}
+
+          {order.paymentMethod === "whatsapp" && !isPaidOrLater && !isCanceled && (
             <div className="text-center">
               <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
                 <MessageCircle size={22} />
@@ -238,6 +304,59 @@ function AccessDenied({ code }: { code: string }) {
       >
         <MessageCircle size={15} /> Falar com a loja
       </a>
+    </div>
+  );
+}
+
+/** Linha do tempo do pedido: aguardando → pago → enviado → entregue. */
+function OrderProgress({ status }: { status: string }) {
+  if (status === "cancelado") return null;
+
+  const currentIndex = TIMELINE.indexOf(status as (typeof TIMELINE)[number]);
+
+  return (
+    <div className="mx-auto mt-7 max-w-2xl">
+      <div className="flex items-center justify-between gap-1 sm:gap-2">
+        {TIMELINE.map((step, i) => {
+          const done = currentIndex >= 0 && i <= currentIndex;
+          const isCurrent = i === currentIndex;
+          return (
+            <div key={step} className="flex flex-1 flex-col items-center gap-2">
+              <div className="flex w-full items-center">
+                <span
+                  className={
+                    "h-px flex-1 " + (i === 0 ? "bg-transparent" : done ? "bg-rose-300" : "bg-noir-900/10")
+                  }
+                />
+                <span
+                  className={
+                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold " +
+                    (done
+                      ? "bg-rose-500 text-white"
+                      : "border border-noir-900/12 bg-white text-noir-900/40")
+                  }
+                >
+                  {done && !isCurrent ? <CheckCircle2 size={15} /> : i + 1}
+                </span>
+                <span
+                  className={
+                    "h-px flex-1 " + (i === TIMELINE.length - 1 ? "bg-transparent" : done && i < currentIndex ? "bg-rose-300" : "bg-noir-900/10")
+                  }
+                />
+              </div>
+              <span
+                className={
+                  "flex items-center gap-1 text-center text-[10px] uppercase tracking-[0.1em] " +
+                  (isCurrent ? "font-semibold text-rose-600" : "text-noir-900/45")
+                }
+              >
+                {isCurrent && <Clock size={11} />}
+                {statusLabel(step)}
+              </span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
