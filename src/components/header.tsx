@@ -34,9 +34,12 @@ export function Header() {
   const { count } = useCartTotals();
   const hasHydrated = useCart((s) => s.hasHydrated);
   const openCart = useCart((s) => s.openCart);
-  const pathname = usePathname();
+  // trailingSlash está ativo: usePathname() devolve "/produtos/" e
+  // "/admin/login/". Normalizamos para comparar com as rotas escritas sem
+  // barra final — senão nenhum item do menu fica marcado como ativo.
+  const currentPath = (usePathname() ?? "/").replace(/\/+$/, "") || "/";
   const router = useRouter();
-  const onDark = pathname === "/" && !scrolled && !searchOpen;
+  const onDark = currentPath === "/" && !scrolled && !searchOpen;
   const solidBackground = scrolled || searchOpen;
   const controlClass = onDark
     ? "text-ivory hover:bg-ivory/10 hover:text-rose-300"
@@ -51,9 +54,9 @@ export function Header() {
 
   // Fecha menu e busca quando a rota muda, sem setState dentro de efeito:
   // guardamos o pathname que estava aberto e derivamos o estado.
-  const [openedAtPath, setOpenedAtPath] = useState(pathname);
-  if (openedAtPath !== pathname) {
-    setOpenedAtPath(pathname);
+  const [openedAtPath, setOpenedAtPath] = useState(currentPath);
+  if (openedAtPath !== currentPath) {
+    setOpenedAtPath(currentPath);
     if (menuOpen) setMenuOpen(false);
     if (searchOpen) setSearchOpen(false);
   }
@@ -107,12 +110,12 @@ export function Header() {
               {LINKS.map((link) => {
                 const active =
                   link.href === "/"
-                    ? pathname === "/"
-                    : pathname.startsWith(link.href.split("?")[0]) &&
+                    ? currentPath === "/"
+                    : currentPath.startsWith(link.href.split("?")[0]) &&
                       (link.href.includes("?")
                         ? false
                         : !link.href.includes("categoria") &&
-                          pathname === link.href);
+                          currentPath === link.href);
                 return (
                   <Link
                     key={link.label}

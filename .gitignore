@@ -31,3 +31,4 @@ Thumbs.db
 # drizzle
 src/db/migrations/
 public/site/
+.vercel

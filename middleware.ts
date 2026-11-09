@@ -10,7 +10,16 @@ import { ADMIN_COOKIE, verifyAdminCookie } from "@/lib/admin-auth";
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
+  // trailingSlash está ativo: o pathname chega como "/admin/login/".
+  // Sem normalizar, a comparação com "/admin/login" nunca casa e o usuário
+  // sem cookie entra em loop de redirecionamento (ERR_TOO_MANY_REDIRECTS).
+  const path = pathname.replace(/\/+$/, "") || "/";
+
+  // Só as rotas que existem de fato em /admin: /admin e /admin/login.
+  // Assim um endereço errado (/admin/x) cai no 404, não no login.
+  const isProtected = path === "/admin";
+
+  if (isProtected) {
     const cookie = req.cookies.get(ADMIN_COOKIE)?.value;
     const ok = await verifyAdminCookie(cookie);
     if (!ok) {

@@ -1,0 +1,10 @@
+node_modules
+.next
+out
+.env.local
+.env
+db.env
+site/assets/originais
+public/site
+tsconfig.tsbuildinfo
+*.log
