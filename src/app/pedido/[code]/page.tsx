@@ -316,21 +316,27 @@ function OrderProgress({ status }: { status: string }) {
 
   return (
     <div className="mx-auto mt-7 max-w-2xl">
-      <div className="flex items-center justify-between gap-1 sm:gap-2">
+      <div className="flex items-start">
         {TIMELINE.map((step, i) => {
           const done = currentIndex >= 0 && i <= currentIndex;
           const isCurrent = i === currentIndex;
           return (
             <div key={step} className="flex flex-1 flex-col items-center gap-2">
               <div className="flex w-full items-center">
+                {/* metade da trilha à esquerda: some no primeiro item */}
                 <span
                   className={
-                    "h-px flex-1 " + (i === 0 ? "bg-transparent" : done ? "bg-rose-300" : "bg-noir-900/10")
+                    "h-px flex-1 " +
+                    (i === 0
+                      ? "bg-transparent"
+                      : i <= currentIndex
+                        ? "bg-rose-300"
+                        : "bg-noir-900/10")
                   }
                 />
                 <span
                   className={
-                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold " +
+                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full " +
                     (done
                       ? "bg-rose-500 text-white"
                       : "border border-noir-900/12 bg-white text-noir-900/40")
@@ -338,9 +344,15 @@ function OrderProgress({ status }: { status: string }) {
                 >
                   {done && !isCurrent ? <CheckCircle2 size={15} /> : i + 1}
                 </span>
+                {/* metade à direita: some no último item */}
                 <span
                   className={
-                    "h-px flex-1 " + (i === TIMELINE.length - 1 ? "bg-transparent" : done && i < currentIndex ? "bg-rose-300" : "bg-noir-900/10")
+                    "h-px flex-1 " +
+                    (i === TIMELINE.length - 1
+                      ? "bg-transparent"
+                      : i < currentIndex
+                        ? "bg-rose-300"
+                        : "bg-noir-900/10")
                   }
                 />
               </div>
