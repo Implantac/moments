@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { inArray } from "drizzle-orm";
+import { and, eq, gte, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { orders, products, type OrderItem } from "@/db/schema";
 import {
@@ -161,6 +161,39 @@ export async function POST(req: Request) {
       payment === "pix" ? Math.round(subtotal * PIX_DISCOUNT_RATE) : 0;
     const total = subtotal + shipping - discount;
 
+    // Reserva o estoque antes de gravar o pedido: UPDATE condicional por
+    // item, atômico no banco (dois clientes não levam a mesma peça). Se
+    // qualquer item faltar, desfaz o que já foi reservado e avisa o cliente.
+    const reserved: { slug: string; qty: number }[] = [];
+    for (const item of items) {
+      const [row] = await db
+        .update(products)
+        .set({ stock: sql`${products.stock} - ${item.qty}` })
+        .where(
+          and(
+            eq(products.slug, item.slug),
+            gte(products.stock, item.qty),
+          ),
+        )
+        .returning({ stock: products.stock });
+
+      if (!row) {
+        for (const done of reserved) {
+          await db
+            .update(products)
+            .set({ stock: sql`${products.stock} + ${done.qty}` })
+            .where(eq(products.slug, done.slug));
+        }
+        return NextResponse.json(
+          {
+            error: `Acabou o estoque de ${item.name}. Ajuste a quantidade na sacola.`,
+          },
+          { status: 409 },
+        );
+      }
+      reserved.push({ slug: item.slug, qty: item.qty });
+    }
+
     let code = makeCode();
     let inserted: { code: string } | null = null;
 
@@ -197,6 +230,13 @@ export async function POST(req: Request) {
     }
 
     if (!inserted) {
+      // Nada foi gravado: devolve as unidades reservadas.
+      for (const done of reserved) {
+        await db
+          .update(products)
+          .set({ stock: sql`${products.stock} + ${done.qty}` })
+          .where(eq(products.slug, done.slug));
+      }
       throw new Error("Não foi possível registrar o pedido.");
     }
 

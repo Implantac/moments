@@ -3,9 +3,9 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { orders } from "@/db/schema";
+import { orders, products } from "@/db/schema";
 import { ADMIN_COOKIE, adminToken, checkPassword, verifyAdminCookie } from "@/lib/admin-auth";
 
 export async function loginAction(formData: FormData) {
@@ -50,6 +50,31 @@ export async function updateStatusAction(formData: FormData) {
     "aguardando_contato",
   ];
   if (!code || !allowed.includes(status)) return;
+
+  const [order] = await db
+    .select({ items: orders.items, status: orders.status })
+    .from(orders)
+    .where(eq(orders.code, code));
+
+  if (!order) return;
+
+  // Cancelar devolve as peças ao estoque (ele é debitado na criação do
+  // pedido); reabrir um pedido cancelado reserva de novo.
+  if (status === "cancelado" && order.status !== "cancelado") {
+    for (const item of order.items) {
+      await db
+        .update(products)
+        .set({ stock: sql`${products.stock} + ${item.qty}` })
+        .where(eq(products.slug, item.slug));
+    }
+  } else if (status !== "cancelado" && order.status === "cancelado") {
+    for (const item of order.items) {
+      await db
+        .update(products)
+        .set({ stock: sql`GREATEST(${products.stock} - ${item.qty}, 0)` })
+        .where(eq(products.slug, item.slug));
+    }
+  }
 
   await db.update(orders).set({ status }).where(eq(orders.code, code));
   revalidatePath("/admin");
